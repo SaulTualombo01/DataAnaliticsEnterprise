@@ -33,8 +33,8 @@ class DataAnaliticsEnterpriseTests {
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            // La aplicación base aún no publica una ruta raíz.
-            assertEquals(404, response.statusCode());
+        // Las rutas no públicas requieren identidad; no hay acceso anónimo por defecto.
+        assertEquals(401, response.statusCode());
         }
     }
 }

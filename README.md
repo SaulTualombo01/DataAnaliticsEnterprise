@@ -92,16 +92,96 @@ se crean tablas, entidades Java ni adaptadores funcionales de M1.
 - V1_1: catálogo de cinco roles y 55 permisos; no crea usuarios ni administrador.
 - V1_2: alcances PROJECT/SOURCE/ASSET. Los IDs SOURCE/ASSET se validan por su
   módulo propietario; M1 añade sus claves foráneas al incorporar V2.
+- V3: credenciales locales protegidas y versión para revocar sesiones.
 - Pruebas del tronco común independientes de las tablas de catálogo.
 
 Los permisos M1 están declarados como operaciones del catálogo común RBAC; no
 implican implementar el módulo ni conceder administración funcional al administrador.
-La autenticación, el evaluador RBAC y las pantallas administrativas siguen pendientes.
+La autenticación local con sesión/cookie está implementada. Las pantallas y la
+administración completa de usuarios siguen pendientes. El evaluador RBAC interno
+se describe en `docs/contratos/AutorizacionInterna.md`.
+
+### Autorización interna
+
+Los casos de uso pueden inyectar `AutorizacionApi` para evaluar o exigir un permiso
+vigente. La cuenta, membresías, rol, permiso y alcance se consultan en PostgreSQL
+en cada evaluación, sin conservar privilegios en una caché o token local.
+El UUID del actor debe venir del futuro mecanismo de identidad verificado en
+servidor; esta API no autentica a una persona ni acepta peticiones HTTP.
+
+Se distinguen SELF, PLATFORM y PROJECT. El administrador global no hereda acceso
+a proyectos. Las funciones propias usan titularidad; los recursos SOURCE/ASSET
+exigen un proveedor del módulo propietario que resuelva su jerarquía real.
+Sin proveedor, con pertenencia incoherente o con múltiples proveedores ambiguos,
+la operación no se autoriza. No hay accesos universales para componentes internos.
+
+Las búsquedas y conteos deben aplicar `alcancesPermitidos` a sus consultas; una
+lista vacía implica no mostrar datos. La comprobación de un recurso concreto
+no habilita listar todo el proyecto. Estados del recurso y reglas funcionales
+siguen siendo responsabilidad del caso de uso propietario.
+
+No se crean endpoints de negocio M1 ni endpoints para cambiar roles. Los cambios de roles/permisos deben realizarse
+mediante el futuro servicio administrativo autorizado y auditado. Las pruebas
+modifican fixtures SQL para comprobar que el evaluador refleja esos cambios.
+
+### Autenticación y sesiones
+
+Contrato: `docs/contratos/AutenticacionSesiones.md` y su OpenAPI adyacente.
+El actor de los casos de uso se obtiene de `IdentidadActualApi.usuarioId()`;
+no debe tomarse de una cabecera o cuerpo enviado por el cliente.
+
+La cookie `TICSESSION` es HttpOnly, SameSite=Lax y Secure por defecto. Usar HTTPS
+en el despliegue compartido. Solo para desarrollo local mediante HTTP:
+
+```powershell
+$env:SESSION_COOKIE_SECURE = "false"
+```
+
+La sesión reside en el servidor de esta instancia: reiniciar la aplicación cierra
+las sesiones. Inactividad: 30 minutos; duración absoluta: 8 horas. Se pueden ajustar
+con SESSION_TIMEOUT y SESSION_ABSOLUTE_TIMEOUT. No hay remember-me ni JWT.
+El cambio de contraseña, la revocación administrativa y los cambios de estado de
+cuenta invalidan sesiones anteriores en su siguiente solicitud. Los permisos RBAC
+se siguen consultando, por lo que no hay roles obsoletos dentro de la cookie.
+
+Antes de entrar, pedir GET /api/v1/auth/csrf con el mismo almacén de cookies que
+se usará después. Enviar el token y la cabecera devueltos al hacer POST login
+(formulario URL-encoded con email/password). Después de entrar, volver a pedir
+CSRF antes de otra escritura. GET /api/v1/auth/me devuelve solo el perfil propio;
+POST logout cierra la sesión. Los errores usan Problem Details con request_id.
+
+La limitación de intentos es local y acotada a esta instancia: 5 por cuenta y 50
+por IP en ventana fija de 15 minutos. Parámetros LOGIN_ACCOUNT_LIMIT, LOGIN_IP_LIMIT
+y LOGIN_WINDOW. No se confía en X-Forwarded-For libre. Un despliegue con múltiples
+instancias o proxy necesita revisar almacenamiento de sesiones y límites compartidos.
+
+#### Inicializar el primer administrador
+
+Solo para una base nueva sin cuentas. Es optativo, no hay contraseña predeterminada:
+
+```powershell
+$env:BOOTSTRAP_ADMIN_ENABLED = "true"
+$env:BOOTSTRAP_ADMIN_EMAIL = Read-Host "Correo del primer administrador"
+$env:BOOTSTRAP_ADMIN_NAME = Read-Host "Nombre"
+$adminPassword = Read-Host "Contraseña inicial" -AsSecureString
+$env:BOOTSTRAP_ADMIN_PASSWORD = [System.Net.NetworkCredential]::new('', $adminPassword).Password
+mvn -f .\DataAnaliticsEnterprise\pom.xml spring-boot:run
+```
+
+La contraseña debe tener al menos 15 caracteres y hasta 72 bytes UTF-8; admite
+espacios y Unicode. Se guarda con BCrypt coste 12, nunca en claro. Retirar las
+variables BOOTSTRAP_ADMIN_* después de inicializar. Si ya existe un administrador
+activo, no se cambia su cuenta ni contraseña; si existen cuentas sin administrador,
+se exige un procedimiento de recuperación explícito, no una promoción automática.
+Todavía no se ofrece recuperación por correo ni CRUD web de cuentas.
 
 `modulo1_catalogo` incorpora esta base por historial Git y añade dominio,
 persistencia y migración V2 de M1. Después de integrar futuros cambios comunes,
 ejecutar las pruebas de la rama consumidora. Usar bases dedicadas distintas para
 ramas con diferentes conjuntos de migraciones; no desactivar la validación Flyway.
+Después de cambiar de rama, ejecutar `mvn -f .\DataAnaliticsEnterprise\pom.xml clean verify`
+para retirar clases compiladas de la rama anterior; usar `-Ppostgres-it` y una base
+de pruebas dedicada para la verificación PostgreSQL completa.
 
 ### Evolución y recuperación de migraciones
 
