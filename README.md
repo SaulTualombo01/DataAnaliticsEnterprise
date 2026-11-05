@@ -69,8 +69,8 @@ dedicada de pruebas**, configurando DB_URL, DB_USER y DB_PASSWORD para esa base:
 mvn -f .\DataAnaliticsEnterprise\pom.xml -Ppostgres-it verify
 ```
 
-Ese perfil incluye migraciones reales, servidor HTTP, integridad de membresías
-y alcances, catálogo RBAC e inmutabilidad histórica. Sin el perfil, las pruebas
+Ese perfil incluye migraciones reales, servidor HTTP, persistencia, aislamiento
+por proyecto, rollback e inmutabilidad histórica. Sin el perfil, las pruebas
 etiquetadas `postgres` se excluyen expresamente. Para ejecutar el JAR, seleccionar
 la base de desarrollo y mantener las variables de conexión:
 
@@ -81,27 +81,31 @@ la base de desarrollo y mantener las variables de conexión:
 El empaquetado genera un JAR ejecutable con sus dependencias. Flyway valida y
 aplica migraciones pendientes al arrancar; no editar una migración ya aplicada.
 
-### Rama del tronco común
+### Ramas de trabajo
 
-`modulo0_troncoComun` contiene la base compartida, con Spring Boot, JDBC/Flyway,
-contexto, identidad, roles/permisos, alcances, auditoría y versionado. El esquema
-vacío `catalogo` se reserva desde V1 para conservar esa migración base; aquí no
-se crean tablas, entidades Java ni adaptadores funcionales de M1.
+La base compartida se mantiene en `modulo0_troncoComun`. Esta rama M1 incorpora
+su commit común y añade únicamente el trabajo específico de catálogo. Las
+migraciones compartidas son V1, V1_1 y V1_2; M1 añade V2 y sus claves foráneas
+para alcances sobre fuentes/activos. Usar bases dedicadas por conjunto de
+migraciones. La numeración se reorganizó antes de publicar estas migraciones;
+si se hubiera aplicado la versión preliminar V3 a una base de pruebas, conservar
+su respaldo y preparar una base nueva: no reparar checksums automáticamente.
 
-- V1: identidad, contexto, roles/asignaciones y mecanismos históricos.
-- V1_1: catálogo de cinco roles y 55 permisos; no crea usuarios ni administrador.
-- V1_2: alcances PROJECT/SOURCE/ASSET. Los IDs SOURCE/ASSET se validan por su
-  módulo propietario; M1 añade sus claves foráneas al incorporar V2.
-- Pruebas del tronco común independientes de las tablas de catálogo.
+### Alcance del primer incremento del modelo
 
-Los permisos M1 están declarados como operaciones del catálogo común RBAC; no
-implican implementar el módulo ni conceder administración funcional al administrador.
-La autenticación, el evaluador RBAC y las pantallas administrativas siguen pendientes.
+- Base SQL de identidad/contexto/RBAC, auditoría/versionado y catálogo M1.
+- Catálogo inicial de cinco roles y 55 permisos, con el diagrama ER opcional deshabilitado.
+- Dominio de M1 sin dependencias de Spring ni JDBC; puerto de persistencia interno.
+- Adaptador PostgreSQL para registrar/recuperar fuentes y el primer estado de activo/campos.
+- Registro de activo, campos, evento y versión de metadatos en una sola transacción.
+- Consultas con proyecto explícito y claves compuestas que impiden relaciones entre proyectos incompatibles.
 
-`modulo1_catalogo` incorpora esta base por historial Git y añade dominio,
-persistencia y migración V2 de M1. Después de integrar futuros cambios comunes,
-ejecutar las pruebas de la rama consumidora. Usar bases dedicadas distintas para
-ramas con diferentes conjuntos de migraciones; no desactivar la validación Flyway.
+Esto todavía no implementa login, evaluación RBAC, administración web, conectores
+de descubrimiento, edición/redescubrimiento versionado o TC13. No se publican
+endpoints de negocio; el repositorio interno no sustituye la autorización del caso
+de uso. Las relaciones futuras de gobierno M3 se incorporarán en su incremento.
+La base puede representar varias asignaciones, pero no habilita por sí misma una
+política de múltiples roles/proyectos por cuenta.
 
 ### Evolución y recuperación de migraciones
 
