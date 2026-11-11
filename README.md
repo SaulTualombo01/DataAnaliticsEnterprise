@@ -52,7 +52,7 @@ mvn -f .\DataAnaliticsEnterprise\pom.xml spring-boot:run
 El servidor escucha en `http://localhost:8080`. La variable de entorno `PORT`
 permite cambiar el puerto. Detener con `Ctrl+C`.
 Todavía no hay endpoints de negocio ni página de inicio: una petición a `/`
-devuelve HTTP 404 aunque el servicio esté funcionando.
+devuelve HTTP 401 sin sesión, aunque el servicio esté funcionando.
 
 ### Probar y empaquetar
 
@@ -69,8 +69,8 @@ dedicada de pruebas**, configurando DB_URL, DB_USER y DB_PASSWORD para esa base:
 mvn -f .\DataAnaliticsEnterprise\pom.xml -Ppostgres-it verify
 ```
 
-Ese perfil incluye migraciones reales, servidor HTTP, persistencia, aislamiento
-por proyecto, rollback e inmutabilidad histórica. Sin el perfil, las pruebas
+Ese perfil incluye migraciones reales, servidor HTTP, integridad de membresías
+y alcances, catálogo RBAC e inmutabilidad histórica. Sin el perfil, las pruebas
 etiquetadas `postgres` se excluyen expresamente. Para ejecutar el JAR, seleccionar
 la base de desarrollo y mantener las variables de conexión:
 
@@ -81,31 +81,117 @@ la base de desarrollo y mantener las variables de conexión:
 El empaquetado genera un JAR ejecutable con sus dependencias. Flyway valida y
 aplica migraciones pendientes al arrancar; no editar una migración ya aplicada.
 
-### Ramas de trabajo
+### Ramas de trabajo y migraciones
 
-La base compartida se mantiene en `modulo0_troncoComun`. Esta rama M1 incorpora
-su commit común y añade únicamente el trabajo específico de catálogo. Las
-migraciones compartidas son V1, V1_1 y V1_2; M1 añade V2 y sus claves foráneas
-para alcances sobre fuentes/activos. Usar bases dedicadas por conjunto de
-migraciones. La numeración se reorganizó antes de publicar estas migraciones;
-si se hubiera aplicado la versión preliminar V3 a una base de pruebas, conservar
-su respaldo y preparar una base nueva: no reparar checksums automáticamente.
+La base compartida se mantiene en `modulo0_troncoComun`. Esta rama
+`modulo1_catalogo` incorpora sus commits de autenticación y autorización y añade
+el dominio, persistencia y proveedor de recursos específico de M1.
 
-### Alcance del primer incremento del modelo
+- V1: identidad, contexto, roles/asignaciones y mecanismos históricos.
+- V1_1: catálogo de cinco roles y 55 permisos; no crea usuarios ni administrador.
+- V1_2: alcances PROJECT/SOURCE/ASSET.
+- V2: catálogo M1 y claves foráneas de fuentes/activos sobre los alcances.
+- V3: credenciales locales protegidas y versión para revocar sesiones.
 
-- Base SQL de identidad/contexto/RBAC, auditoría/versionado y catálogo M1.
-- Catálogo inicial de cinco roles y 55 permisos, con el diagrama ER opcional deshabilitado.
-- Dominio de M1 sin dependencias de Spring ni JDBC; puerto de persistencia interno.
-- Adaptador PostgreSQL para registrar/recuperar fuentes y el primer estado de activo/campos.
-- Registro de activo, campos, evento y versión de metadatos en una sola transacción.
-- Consultas con proyecto explícito y claves compuestas que impiden relaciones entre proyectos incompatibles.
+Usar una base dedicada por conjunto de migraciones. Una base exclusiva de TC que
+ya tiene V3 no dispone de V2: no reutilizarla para M1 ni activar migraciones fuera
+de orden. Preparar una base nueva o una migración de datos explícita. No reparar
+checksums automáticamente. Detalles: `docs/contratos/IntegracionCatalogoTroncoComun.md`.
 
-Esto todavía no implementa login, evaluación RBAC, administración web, conectores
-de descubrimiento, edición/redescubrimiento versionado o TC13. No se publican
-endpoints de negocio; el repositorio interno no sustituye la autorización del caso
-de uso. Las relaciones futuras de gobierno M3 se incorporarán en su incremento.
-La base puede representar varias asignaciones, pero no habilita por sí misma una
-política de múltiples roles/proyectos por cuenta.
+### Alcance integrado del catálogo
+
+- Dominio M1 independiente de Spring/JDBC y puerto de persistencia interno.
+- Registro/consulta de fuente y estado inicial de activo/campos.
+- Activo, campos, evento y versión de metadatos en una sola transacción.
+- Consultas por proyecto y restricciones contra referencias incompatibles.
+- Proveedor M1 de jerarquía real para autorización de fuentes y activos.
+- Autenticación local y evaluador RBAC común, sin acceso universal del administrador.
+
+El caso de uso público autorizado de alta/consulta, los conectores de
+descubrimiento, la edición/redescubrimiento versionado, TC13 y las pantallas
+continúan pendientes. No hay endpoints de negocio de catálogo. Su repositorio
+interno no sustituye la autorización del caso de uso. La base puede representar
+varias asignaciones, sin aprobar por sí misma múltiples roles/proyectos por cuenta.
+
+### Autorización interna
+
+Los casos de uso pueden inyectar `AutorizacionApi` para evaluar o exigir un permiso
+vigente. La cuenta, membresías, rol, permiso y alcance se consultan en PostgreSQL
+en cada evaluación, sin conservar privilegios en una caché o token local.
+El UUID del actor procede de `IdentidadActualApi` y la sesión verificada en
+servidor; la API de autorización no autentica por sí misma ni acepta peticiones HTTP.
+
+Se distinguen SELF, PLATFORM y PROJECT. El administrador global no hereda acceso
+a proyectos. Las funciones propias usan titularidad; los recursos SOURCE/ASSET
+usan el proveedor de M1 que resuelve su jerarquía real desde PostgreSQL.
+Sin proveedor, con pertenencia incoherente o con múltiples proveedores ambiguos,
+la operación no se autoriza. No hay accesos universales para componentes internos.
+
+Las búsquedas y conteos deben aplicar `alcancesPermitidos` a sus consultas; una
+lista vacía implica no mostrar datos. La comprobación de un recurso concreto
+no habilita listar todo el proyecto. Estados del recurso y reglas funcionales
+siguen siendo responsabilidad del caso de uso propietario.
+
+No se crean endpoints de negocio M1 ni endpoints para cambiar roles. Los cambios de roles/permisos deben realizarse
+mediante el futuro servicio administrativo autorizado y auditado. Las pruebas
+modifican fixtures SQL para comprobar que el evaluador refleja esos cambios.
+
+### Autenticación y sesiones
+
+Contrato: `docs/contratos/AutenticacionSesiones.md` y su OpenAPI adyacente.
+El actor de los casos de uso se obtiene de `IdentidadActualApi.usuarioId()`;
+no debe tomarse de una cabecera o cuerpo enviado por el cliente.
+
+La cookie `TICSESSION` es HttpOnly, SameSite=Lax y Secure por defecto. Usar HTTPS
+en el despliegue compartido. Solo para desarrollo local mediante HTTP:
+
+```powershell
+$env:SESSION_COOKIE_SECURE = "false"
+```
+
+La sesión reside en el servidor de esta instancia: reiniciar la aplicación cierra
+las sesiones. Inactividad: 30 minutos; duración absoluta: 8 horas. Se pueden ajustar
+con SESSION_TIMEOUT y SESSION_ABSOLUTE_TIMEOUT. No hay remember-me ni JWT.
+El cambio de contraseña, la revocación administrativa y los cambios de estado de
+cuenta invalidan sesiones anteriores en su siguiente solicitud. Los permisos RBAC
+se siguen consultando, por lo que no hay roles obsoletos dentro de la cookie.
+
+Antes de entrar, pedir GET /api/v1/auth/csrf con el mismo almacén de cookies que
+se usará después. Enviar el token y la cabecera devueltos al hacer POST login
+(formulario URL-encoded con email/password). Después de entrar, volver a pedir
+CSRF antes de otra escritura. GET /api/v1/auth/me devuelve solo el perfil propio;
+POST logout cierra la sesión. Los errores usan Problem Details con request_id.
+
+La limitación de intentos es local y acotada a esta instancia: 5 por cuenta y 50
+por IP en ventana fija de 15 minutos. Parámetros LOGIN_ACCOUNT_LIMIT, LOGIN_IP_LIMIT
+y LOGIN_WINDOW. No se confía en X-Forwarded-For libre. Un despliegue con múltiples
+instancias o proxy necesita revisar almacenamiento de sesiones y límites compartidos.
+
+#### Inicializar el primer administrador
+
+Solo para una base nueva sin cuentas. Es optativo, no hay contraseña predeterminada:
+
+```powershell
+$env:BOOTSTRAP_ADMIN_ENABLED = "true"
+$env:BOOTSTRAP_ADMIN_EMAIL = Read-Host "Correo del primer administrador"
+$env:BOOTSTRAP_ADMIN_NAME = Read-Host "Nombre"
+$adminPassword = Read-Host "Contraseña inicial" -AsSecureString
+$env:BOOTSTRAP_ADMIN_PASSWORD = [System.Net.NetworkCredential]::new('', $adminPassword).Password
+mvn -f .\DataAnaliticsEnterprise\pom.xml spring-boot:run
+```
+
+La contraseña debe tener al menos 15 caracteres y hasta 72 bytes UTF-8; admite
+espacios y Unicode. Se guarda con BCrypt coste 12, nunca en claro. Retirar las
+variables BOOTSTRAP_ADMIN_* después de inicializar. Si ya existe un administrador
+activo, no se cambia su cuenta ni contraseña; si existen cuentas sin administrador,
+se exige un procedimiento de recuperación explícito, no una promoción automática.
+Todavía no se ofrece recuperación por correo ni CRUD web de cuentas.
+
+Después de integrar futuros cambios comunes, ejecutar las pruebas de M1. Usar bases dedicadas distintas para
+ramas con diferentes conjuntos de migraciones; no desactivar la validación Flyway.
+Después de cambiar de rama, ejecutar `mvn -f .\DataAnaliticsEnterprise\pom.xml clean verify`
+para retirar clases compiladas de la rama anterior; usar `-Ppostgres-it` y una base
+de pruebas dedicada para la verificación PostgreSQL completa.
 
 ### Evolución y recuperación de migraciones
 
