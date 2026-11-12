@@ -1,0 +1,182 @@
+{
+  "openapi": "3.1.1",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "M4 Analítica — API HTTP",
+    "version": "0.1.0",
+    "description": "Contrato candidato para revisión (Sprint 0, P27). Los esquemas viven en analitica-http.schema.json. Ejemplos sintéticos en analitica.examples.json."
+  },
+  "servers": [
+    { "url": "http://127.0.0.1:8080", "description": "Backend Spring Boot local" },
+    { "url": "http://127.0.0.1:8094", "description": "Mock M4 (tools/mock_m4.py)" }
+  ],
+  "security": [{ "sessionCookie": [] }],
+  "paths": {
+    "/api/v1/analitica/ping": {
+      "get": {
+        "operationId": "pingAnalitica",
+        "summary": "Prueba de vida del módulo M4",
+        "responses": {
+          "200": {
+            "description": "Módulo operativo.",
+            "content": {
+              "text/plain": {
+                "schema": { "type": "string" },
+                "example": "M4 Analitica operativo"
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthenticated" }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/analytics/kpis/evaluate": {
+      "post": {
+        "operationId": "evaluarKpis",
+        "summary": "Evaluar KPIs sobre un activo",
+        "description": "Solicita una lectura TC13 y calcula los KPIs. Revisar execution_state y scope.complete: un resultado parcial no es una evaluación final.",
+        "security": [{ "sessionCookie": [], "csrf": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/ProjectId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "analitica-http.schema.json#/$defs/KpiEvaluateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Evaluación registrada (completa, parcial o vacía).",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "analitica-http.schema.json#/$defs/KpiEvaluateResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthenticated" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "503": { "$ref": "#/components/responses/SourceUnavailable" }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/analytics/dashboards/summary": {
+      "get": {
+        "operationId": "resumenDashboards",
+        "summary": "Resumen de dashboards y últimos KPIs del proyecto",
+        "parameters": [{ "$ref": "#/components/parameters/ProjectId" }],
+        "responses": {
+          "200": {
+            "description": "Resumen del proyecto.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "analitica-http.schema.json#/$defs/DashboardSummaryResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthenticated" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/v1/projects/{projectId}/analytics/reports/generate": {
+      "post": {
+        "operationId": "generarReporte",
+        "summary": "Solicitar la generación asíncrona de un reporte ejecutivo",
+        "security": [{ "sessionCookie": [], "csrf": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/ProjectId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "analitica-http.schema.json#/$defs/ReportGenerateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Trabajo aceptado; el reporte se genera de forma asíncrona.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "analitica-http.schema.json#/$defs/ReportGenerateResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthenticated" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "ProjectId": {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string", "format": "uuid" }
+      }
+    },
+    "responses": {
+      "Unauthenticated": {
+        "description": "Sin sesión válida.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "analitica-http.schema.json#/$defs/ErrorResponse" }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Sin permiso de analítica en el proyecto.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "analitica-http.schema.json#/$defs/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Proyecto, activo o dashboard inexistente o no visible.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "analitica-http.schema.json#/$defs/ErrorResponse" }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Petición inválida.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "analitica-http.schema.json#/$defs/ErrorResponse" }
+          }
+        }
+      },
+      "SourceUnavailable": {
+        "description": "Fuente o lectura TC13 no disponible.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "analitica-http.schema.json#/$defs/ErrorResponse" }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "TICSESSION",
+        "description": "Cookie de sesión del servidor (ver autenticacion.openapi.json)."
+      },
+      "csrf": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-TOKEN",
+        "description": "Obtener con GET /api/v1/auth/csrf. Requerido en peticiones que modifican estado."
+      }
+    }
+  }
+}
