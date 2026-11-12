@@ -21,6 +21,7 @@ class CatalogoPostgresTests {
     private static final Instant NOW = Instant.parse("2026-11-04T12:00:00Z");
     @Autowired RepositorioCatalogo catalogo;
     @Autowired JdbcClient jdbc;
+    @Autowired tools.jackson.databind.ObjectMapper json;
 
     @Test
     void persisteFuenteActivoCamposEHistoriaConAislamientoDeProyecto() {
@@ -94,6 +95,18 @@ class CatalogoPostgresTests {
                 FROM catalogo.activo WHERE id=:original
                 """).param("wrong", wrongId).param("path", wrongId.toString()).param("original", estado.activo().id()).update());
         assertTrue(catalogo.buscarActivo(f.project(), wrongId).isEmpty());
+    }
+
+    @Test
+    void representacionHistoricaSinRestriccionesSigueSiendoLegible() {
+        Fixture f=fixture();
+        EstadoCatalogo estado=estado(f,UUID.randomUUID());
+        catalogo.registrarActivo(estado,f.actor(),UUID.randomUUID());
+        String payload=jdbc.sql("SELECT state_payload::text FROM versionado.version_recurso WHERE id=:id")
+                .param("id",estado.activo().metadataVersionId()).query(String.class).single();
+        var legacy=(tools.jackson.databind.node.ObjectNode)json.readTree(payload);
+        legacy.remove("restricciones");
+        assertEquals(estado,json.readValue(json.writeValueAsString(legacy),EstadoCatalogo.class));
     }
 
     private Fixture fixture() {

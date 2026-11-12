@@ -72,6 +72,44 @@ public class CatalogoJdbcAdapter implements RepositorioCatalogo {
     @Override
     @Transactional
     public void registrarActivo(EstadoCatalogo estado, UUID actorId, UUID requestId) {
+        publicarLote(List.of(estado),actorId,requestId);
+    }
+
+    @Override
+    @Transactional
+    public void registrarDescubrimiento(FuenteDatos esperada, List<String> schemas, List<EstadoCatalogo> estados,
+            UUID actorId, UUID requestId, Instant instante) {
+        jdbc.sql("SELECT id FROM catalogo.fuente WHERE id=:id AND project_id=:project FOR UPDATE")
+                .param("id",esperada.id()).param("project",esperada.projectId()).query(UUID.class).optional()
+                .orElseThrow(() -> new IllegalStateException("Fuente no disponible"));
+        if (!buscarFuente(esperada.projectId(),esperada.id()).filter(esperada::equals).isPresent()) {
+            throw new IllegalStateException("La fuente cambió durante el descubrimiento");
+        }
+        if (esperada.status()!=FuenteDatos.Estado.ENABLED || estados.stream().anyMatch(e ->
+                !e.activo().sourceId().equals(esperada.id()) || !e.activo().projectId().equals(esperada.projectId()))) {
+            throw new IllegalArgumentException("Publicación fuera de la fuente habilitada");
+        }
+        publicarLote(estados,actorId,requestId);
+        jdbc.sql("UPDATE catalogo.fuente SET last_discovery_at=:instant WHERE id=:id")
+                .param("instant",Timestamp.from(instante)).param("id",esperada.id()).update();
+        jdbc.sql("""
+                INSERT INTO auditoria.evento(id,actor_type,actor_id,project_id,resource_type,resource_id,action,
+                    occurred_at,outcome,request_id,safe_details)
+                VALUES(:id,'USER',:actor,:project,'catalogo.fuente',:source,'m1.discovery.complete',
+                    :instant,'SUCCESS',:request,CAST(:details AS jsonb))
+                """).param("id",UUID.randomUUID()).param("actor",actorId).param("project",esperada.projectId())
+                .param("source",esperada.id()).param("instant",Timestamp.from(instante)).param("request",requestId)
+                .param("details",json.writeValueAsString(Map.of("schemas",schemas,"table_count",estados.size(),"metadata_only",true))).update();
+    }
+
+    private void publicarLote(List<EstadoCatalogo> estados, UUID actorId, UUID requestId) {
+        // Primero existen todos los activos/campos; luego se resuelven FK incluso cíclicas.
+        for (EstadoCatalogo estado : estados) insertarActivoYCampos(estado,actorId);
+        for (EstadoCatalogo estado : estados) insertarRestricciones(estado);
+        for (EstadoCatalogo estado : estados) registrarHistoria(estado,actorId,requestId);
+    }
+
+    private void insertarActivoYCampos(EstadoCatalogo estado, UUID actorId) {
         ActivoDatos a = estado.activo();
         if (a.revision() != 0 || a.status() != ActivoDatos.Estado.ACTIVE) {
             throw new IllegalArgumentException("El alta exige activo nuevo, revisión cero y estado active");
@@ -105,6 +143,29 @@ public class CatalogoJdbcAdapter implements RepositorioCatalogo {
                         .addValue("description", c.businessDescription()).addValue("synonyms", c.synonyms().toArray(String[]::new))
                         .addValue("status", code(c.status()))).update();
         }
+    }
+
+    private void insertarRestricciones(EstadoCatalogo estado) {
+        for (RestriccionDatos c : estado.restricciones()) {
+            jdbc.sql("""
+                    INSERT INTO catalogo.restriccion(id,asset_id,project_id,name,kind,target_asset_id,target_locator,resolution_status)
+                    VALUES(:id,:asset,:project,:name,:kind,:target,:locator,:resolution)
+                    """).param("id",c.id()).param("asset",c.assetId()).param("project",c.projectId()).param("name",c.name())
+                    .param("kind",c.kind().name()).param("target",c.targetAssetId())
+                    .param("locator",c.targetLocator()==null ? null : json.writeValueAsString(c.targetLocator()))
+                    .param("resolution",code(c.resolution())).update();
+            for (RestriccionDatos.Miembro m : c.members()) {
+                jdbc.sql("""
+                        INSERT INTO catalogo.miembro_restriccion(constraint_id,asset_id,project_id,position,source_field_id,target_field_name)
+                        VALUES(:constraint,:asset,:project,:position,:field,:target)
+                        """).param("constraint",c.id()).param("asset",c.assetId()).param("project",c.projectId())
+                        .param("position",m.position()).param("field",m.sourceFieldId()).param("target",m.targetFieldName()).update();
+            }
+        }
+    }
+
+    private void registrarHistoria(EstadoCatalogo estado, UUID actorId, UUID requestId) {
+        ActivoDatos a = estado.activo();
         UUID eventId = UUID.randomUUID();
         jdbc.sql("""
                 INSERT INTO auditoria.evento(id,actor_type,actor_id,project_id,resource_type,resource_id,action,occurred_at,outcome,request_id)
@@ -141,6 +202,62 @@ public class CatalogoJdbcAdapter implements RepositorioCatalogo {
                     rs.getInt("position"), rs.getString("native_type"), CampoDatos.TipoLogico.valueOf(rs.getString("logical_type").toUpperCase(Locale.ROOT)),
                     rs.getObject("nullable", Boolean.class), rs.getString("business_description"), strings(rs,"synonyms"),
                     CampoDatos.Estado.valueOf(rs.getString("status").toUpperCase(Locale.ROOT)))).list();
+    }
+
+    @Override
+    public List<RestriccionDatos> listarRestricciones(UUID projectId, UUID assetId) {
+        var miembros = jdbc.sql("""
+                SELECT constraint_id,position,source_field_id,target_field_name FROM catalogo.miembro_restriccion
+                WHERE project_id=:project AND asset_id=:asset ORDER BY constraint_id,position
+                """).param("project",projectId).param("asset",assetId).query((rs,row) -> Map.entry(uuid(rs,"constraint_id"),
+                    new RestriccionDatos.Miembro(rs.getInt("position"),uuid(rs,"source_field_id"),rs.getString("target_field_name"))))
+                .list().stream().collect(java.util.stream.Collectors.groupingBy(Map.Entry::getKey,
+                    java.util.stream.Collectors.mapping(Map.Entry::getValue,java.util.stream.Collectors.toList())));
+        return jdbc.sql("""
+                SELECT * FROM catalogo.restriccion WHERE project_id=:project AND asset_id=:asset ORDER BY kind,name,id
+                """).param("project",projectId).param("asset",assetId).query((rs,row) -> new RestriccionDatos(
+                    uuid(rs,"id"),projectId,assetId,rs.getString("name"),RestriccionDatos.Tipo.valueOf(rs.getString("kind")),
+                    uuid(rs,"target_asset_id"),rs.getString("target_locator")==null ? null :
+                        json.readValue(rs.getString("target_locator"),LocalizadorTabla.class),
+                    RestriccionDatos.Resolucion.valueOf(rs.getString("resolution_status").toUpperCase(Locale.ROOT)),
+                    miembros.getOrDefault(uuid(rs,"id"),List.of()))).list();
+    }
+
+    @Override
+    public UUID organizacionDelProyecto(UUID projectId) {
+        return jdbc.sql("SELECT organization_id FROM contexto.proyecto WHERE id=:id")
+                .param("id",projectId).query(UUID.class).single();
+    }
+
+    @Override
+    public List<String> etiquetasActivo(UUID projectId,UUID assetId) {
+        return jdbc.sql("""
+                SELECT e.name FROM catalogo.activo_etiqueta a
+                JOIN catalogo.etiqueta e ON e.id=a.tag_id AND e.project_id=a.project_id
+                WHERE a.project_id=:project AND a.asset_id=:asset AND e.status='active'
+                ORDER BY e.normalized_name,e.id
+                """).param("project",projectId).param("asset",assetId).query(String.class).list();
+    }
+
+    @Override
+    public boolean existeVersion(UUID projectId,UUID assetId,UUID versionId) {
+        return jdbc.sql("""
+                SELECT EXISTS(SELECT 1 FROM versionado.version_recurso WHERE project_id=:project
+                    AND resource_id=:asset AND id=:version AND resource_type='catalogo.activo' AND representation_version=1)
+                """).param("project",projectId).param("asset",assetId).param("version",versionId).query(Boolean.class).single();
+    }
+
+    @Override
+    public List<CampoDatos> paginaCamposVersion(UUID projectId,UUID assetId,UUID versionId,long offset,int limit) {
+        return jdbc.sql("""
+                SELECT campo::text FROM versionado.version_recurso v
+                CROSS JOIN LATERAL jsonb_array_elements(COALESCE(v.state_payload->'campos','null'::jsonb)) AS campos(campo)
+                WHERE v.project_id=:project AND v.resource_id=:asset AND v.id=:version
+                    AND v.resource_type='catalogo.activo' AND v.representation_version=1
+                ORDER BY (campo->>'position')::integer,(campo->>'id')::uuid LIMIT :limit OFFSET :offset
+                """).param("project",projectId).param("asset",assetId).param("version",versionId)
+                .param("limit",limit).param("offset",offset)
+                .query((rs,row)->json.readValue(rs.getString(1),CampoDatos.class)).list();
     }
 
     @Override
