@@ -44,6 +44,12 @@ Se registran entrada válida/fallida, cambio de contraseña, revocación e inici
 
 No hay endpoints públicos de registro, de modificación de roles ni recuperación por correo. La protección del último administrador y la administración completa de cuentas siguen pendientes. M1 debe integrar el proveedor de recursos y los casos de uso autorizados; este incremento no publica sus operaciones.
 
+## Correlación común
+
+Al incorporar M1-04, los errores comunes usan instance=urn:request:<uuid>,
+identificando la petición sin reflejar su URL. Se mantiene request_id y la cabecera
+X-Request-Id. Las respuestas de autenticación conservan sus campos y códigos.
+
 ## Respuestas y pruebas
 
 Éxitos JSON: data/meta.request_id. Errores: application/problem+json con type/title/status/detail/instance/code/request_id, sin envoltura data y sin detalles de existencia de cuentas en el login. Los mensajes de credenciales inválidas son iguales para usuario ausente, contraseña incorrecta y cuenta inactiva. No se promete tiempo de respuesta idéntico ni se expone el motivo interno de Spring Security.

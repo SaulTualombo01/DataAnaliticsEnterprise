@@ -62,6 +62,7 @@ public class SeguridadWebConfig {
                 .requestMatchers(HttpMethod.POST,"/api/v1/auth/login","/api/v1/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/v1/auth/me").authenticated()
                 .requestMatchers(HttpMethod.POST,"/api/v1/auth/password","/api/v1/admin/users/*/sessions/revoke").authenticated()
+                .requestMatchers(HttpMethod.GET,"/api/v1/projects/*/assets/*","/api/v1/projects/*/assets/*/fields").authenticated()
                 .anyRequest().denyAll())
             .exceptionHandling(errors->errors
                 .authenticationEntryPoint((req,res,error)->problemas.escribir(req,res,401,"AUTHENTICATION_REQUIRED","Inicia sesión para continuar"))
