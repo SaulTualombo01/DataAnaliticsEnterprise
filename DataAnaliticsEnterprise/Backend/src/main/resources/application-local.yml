@@ -1,0 +1,24 @@
+# Perfil explícito para desarrollo HTTP local; nunca usar en producción.
+springdoc:
+  api-docs:
+    enabled: ${M2_API_DOCS_ENABLED:true}
+  swagger-ui:
+    enabled: ${M2_API_DOCS_ENABLED:true}
+server:
+  address: 127.0.0.1
+  servlet:
+    session:
+      cookie:
+        name: M2SESSION_LOCAL
+        secure: false
+m2:
+  csv:
+    enabled: true
+    directory: ./target/csv-inputs
+  integrations:
+    mode: uploads
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB

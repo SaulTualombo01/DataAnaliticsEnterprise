@@ -1,0 +1,103 @@
+springdoc:
+  api-docs:
+    enabled: ${M2_API_DOCS_ENABLED:false}
+  swagger-ui:
+    enabled: ${M2_API_DOCS_ENABLED:false}
+    disable-swagger-default-url: true
+    persist-authorization: false
+    operations-sorter: alpha
+    tags-sorter: alpha
+    doc-expansion: none
+  paths-to-match: /api/v1/**
+  override-with-generic-response: false
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
+  application:
+    name: modulo-2-calidad-datos
+  datasource:
+    url: ${M2_DB_JDBC_URL}
+    username: ${M2_DB_USERNAME}
+    password: ${M2_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      auto-commit: false
+      maximum-pool-size: 10
+  jpa:
+    open-in-view: false
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: m2
+        format_sql: false
+  session:
+    store-type: jdbc
+    timeout: ${M2_SESSION_IDLE_TIMEOUT:30m}
+    jdbc:
+      initialize-schema: never
+      table-name: m2.spring_session
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    deserialization:
+      fail-on-unknown-properties: true
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  tomcat:
+    threads:
+      max: 64
+      min-spare: 4
+    max-connections: 256
+    accept-count: 64
+  servlet:
+    session:
+      cookie:
+        name: __Host-M2SESSION
+        http-only: true
+        secure: true
+        path: /
+        same-site: lax
+  error:
+    include-stacktrace: never
+    include-message: never
+
+m2:
+  operations:
+    poll-ms: ${M2_OPERATIONS_POLL_MS:60000}
+  recovery:
+    enabled: ${M2_RECOVERY_ENABLED:false}
+    smtp:
+      host: ${M2_RECOVERY_SMTP_HOST:smtp.gmail.com}
+      port: ${M2_RECOVERY_SMTP_PORT:587}
+      from: ${M2_RECOVERY_FROM:}
+      security: ${M2_RECOVERY_SMTP_SECURITY:STARTTLS}
+      auth: ${M2_RECOVERY_SMTP_AUTH:true}
+      username: ${M2_RECOVERY_SMTP_USERNAME:}
+      password: ${M2_RECOVERY_SMTP_PASSWORD:}
+  csv:
+    enabled: true
+  integrations:
+    mode: uploads
+  security:
+    data-key-id: ${M2_DATA_KEY_ID}
+    data-key-base64: ${M2_DATA_KEY_BASE64}
+    email-lookup-key-base64: ${M2_EMAIL_LOOKUP_KEY_BASE64}
+    session-idle-timeout: ${M2_SESSION_IDLE_TIMEOUT:30m}
+    session-absolute-timeout: ${M2_SESSION_ABSOLUTE_TIMEOUT:8h}
+  limits:
+    max-pending-per-project: ${M2_MAX_PENDING_PER_PROJECT:50}
+    max-pending-per-user: ${M2_MAX_PENDING_PER_USER:10}
+    max-work-units: ${M2_MAX_WORK_UNITS:500000}
+    max-findings: ${M2_MAX_FINDINGS:20000}
+    max-stored-csv-bytes: ${M2_MAX_STORED_CSV_BYTES:1000000000}
+    min-free-disk-bytes: ${M2_MIN_FREE_DISK_BYTES:100000000}
+    csv-retention-days: ${M2_CSV_RETENTION_DAYS:30}
+    max-input-rows: ${M2_MAX_INPUT_ROWS:10000}
+    max-input-bytes: ${M2_MAX_INPUT_BYTES:10000000}
+    evaluation-timeout: ${M2_EVALUATION_TIMEOUT:60s}

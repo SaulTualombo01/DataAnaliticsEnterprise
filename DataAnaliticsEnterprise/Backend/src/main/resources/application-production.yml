@@ -1,0 +1,31 @@
+# Activar junto a docker únicamente con certificados y secretos reales configurados.
+spring:
+  config:
+    import: configtree:${M2_SECRETS_DIRECTORY:/run/secrets/}
+server:
+  ssl:
+    enabled: true
+    key-store: ${M2_TLS_KEY_STORE}
+    key-store-type: PKCS12
+    enabled-protocols: TLSv1.2,TLSv1.3
+  forward-headers-strategy: none
+  servlet:
+    session:
+      cookie:
+        name: __Host-M2SESSION
+        secure: true
+        http-only: true
+        same-site: lax
+        path: /
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+m2:
+  csv:
+    directory: ${M2_CSV_DIRECTORY}
+  worker:
+    user-id: ${M2_WORKER_USER_ID}
+  bootstrap:
+    enabled: false

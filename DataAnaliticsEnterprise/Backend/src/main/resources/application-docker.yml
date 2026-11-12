@@ -1,0 +1,44 @@
+# Perfil del Compose local: solo archivos subidos, HTTP accesible únicamente por localhost.
+springdoc:
+  api-docs:
+    enabled: ${M2_API_DOCS_ENABLED:true}
+  swagger-ui:
+    enabled: ${M2_API_DOCS_ENABLED:true}
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
+  datasource:
+    url: jdbc:postgresql://database:5432/m2_local
+    username: m2_app
+  jpa:
+    properties:
+      hibernate:
+        default_schema: m2
+server:
+  address: 0.0.0.0
+  servlet:
+    session:
+      cookie:
+        name: M2SESSION_LOCAL
+        secure: false
+m2:
+  csv:
+    enabled: true
+    directory: /app/data/csv-inputs
+  integrations:
+    mode: uploads
+  worker:
+    user-id: 4adcfd88-6c8f-4d42-839e-af2ea2f05753
+  bootstrap:
+    enabled: true
+    allow-existing: true
+    fixture-rules: false
+    project-id: b19b98b7-e715-42ca-b5af-02d665db48ad
+    organization-id: a53e651d-b2fe-4c71-9051-0dd92b09b102
+    project-name: Proyecto de calidad
+    admin-email: admin@example.test
+    quality-email: calidad@example.test
+    worker-id: 4adcfd88-6c8f-4d42-839e-af2ea2f05753
+    worker-email: worker@example.test

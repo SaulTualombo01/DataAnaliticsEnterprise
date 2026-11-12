@@ -1,0 +1,2367 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "M2 Calidad de datos",
+    "version": "1.0.0-local",
+    "description": "Contrato implementado para desarrollo local con archivos CSV subidos; los contratos externos M1/TC13 siguen pendientes. Los esquemas JSON documentan las solicitudes y respuestas principales. Las reglas y permisos se comprueban en servidor por proyecto y activo. La consulta de un trabajo FAILED devuelve 200. Completar no implica aprobar. Idempotency-Key reutilizada devuelve la misma ejecución en su estado actual. El perfil normal usa cookie __Host-M2SESSION; el Compose local usa M2SESSION_LOCAL."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api/v1",
+      "description": "Compose local"
+    }
+  ],
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/session/csrf": {
+      "get": {
+        "summary": "Obtener token CSRF",
+        "description": "Permiso: Público",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/sessions": {
+      "post": {
+        "summary": "Iniciar sesión",
+        "description": "Permiso: Público; requiere CSRF",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/sessions/current": {
+      "delete": {
+        "summary": "Cerrar sesión",
+        "description": "Permiso: Sesión; requiere CSRF",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada o aceptada."
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "summary": "Consultar identidad y ámbitos",
+        "description": "Permiso: Sesión",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/password-resets": {
+      "post": {
+        "summary": "Solicitar recuperación",
+        "description": "Permiso: Público; 503 si no hay proveedor de correo",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "required": [
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/password-resets/confirm": {
+      "post": {
+        "summary": "Restablecer contraseña",
+        "description": "Permiso: Público; requiere CSRF",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada o aceptada."
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "maxLength": 128
+                  }
+                },
+                "required": [
+                  "token",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/projects/{project}/assets": {
+      "get": {
+        "summary": "Consultar metadatos autorizados",
+        "description": "Permiso: CATALOG_MANAGER, QUALITY_MANAGER, GOVERNANCE_MANAGER, BUSINESS_ANALYST",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/quality-rules": {
+      "get": {
+        "summary": "Listar reglas",
+        "description": "Permiso: QUALITY_MANAGER, GOVERNANCE_MANAGER, BUSINESS_ANALYST; cada fila incluye current_version con condición, fórmula, umbral y versión histórica vigente.",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "description": "Búsqueda literal por nombre de regla."
+          },
+          {
+            "name": "enabled",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear regla y primera versión",
+        "description": "Permiso: QUALITY_MANAGER",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRule"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/quality-rules/{id}": {
+      "get": {
+        "summary": "Consultar regla con versiones",
+        "description": "Permiso: QUALITY_MANAGER, GOVERNANCE_MANAGER, BUSINESS_ANALYST",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Cambiar nombre o activación",
+        "description": "Permiso: QUALITY_MANAGER; If-Match",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "\"0\""
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/merge-patch+json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/quality-rules/{id}/versions": {
+      "post": {
+        "summary": "Crear versión inmutable",
+        "description": "Permiso: QUALITY_MANAGER; If-Match",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "\"0\""
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Version"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/quality-evaluations": {
+      "post": {
+        "summary": "Solicitar evaluación idempotente",
+        "description": "Permiso: QUALITY_MANAGER; Idempotency-Key; expected_rule_versions permite comprobar las versiones revisadas antes de crear el trabajo (412 si cambian).",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEvaluation"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Consultar historial",
+        "description": "Permiso: QUALITY_MANAGER, GOVERNANCE_MANAGER, BUSINESS_ANALYST; total_count se calcula con los mismos filtros y permisos que el listado. Devuelve disponibilidad y referencias del origen; EXPIRED no elimina los resultados históricos.",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Día inclusivo en America/Guayaquil. El servidor rechaza intervalos invertidos."
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Día inclusivo en America/Guayaquil. El servidor rechaza intervalos invertidos."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "QUEUED",
+                "RUNNING",
+                "COMPLETED",
+                "FAILED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/quality-evaluations/{id}": {
+      "get": {
+        "summary": "Consultar estado y referencias",
+        "description": "Permiso: QUALITY_MANAGER, GOVERNANCE_MANAGER, BUSINESS_ANALYST",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/quality-evaluations/{id}/results": {
+      "get": {
+        "summary": "Consultar indicadores y versiones fijadas",
+        "description": "Permiso: QUALITY_MANAGER, GOVERNANCE_MANAGER, BUSINESS_ANALYST",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/quality-incidents": {
+      "get": {
+        "summary": "Consultar incidencias",
+        "description": "QUALITY_MANAGER. Sin asset_id devuelve la unión de activos autorizados. Todos los filtros se aplican antes de paginar y meta.page_info.total_count contiene el total filtrado. Conserva todas las evaluaciones del historial.",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "evaluation_id",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            },
+            "description": "Filtra la evaluación antes de paginar."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "OPEN",
+                "IN_PROGRESS",
+                "RESOLVED",
+                "DISMISSED"
+              ]
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+              ]
+            }
+          },
+          {
+            "name": "dimension",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "COMPLETENESS",
+                "UNIQUENESS",
+                "VALIDITY",
+                "CONSISTENCY",
+                "ACCURACY",
+                "TIMELINESS"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Búsqueda literal por nombre de regla, campo, fila o código de detección; sin distinguir mayúsculas. No interpreta comodines ni SQL.",
+            "schema": {
+              "type": "string",
+              "maxLength": 160
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/quality-incidents/{id}/events": {
+      "get": {
+        "summary": "Consultar seguimiento y comentarios autorizados",
+        "description": "Permiso: QUALITY_MANAGER",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Registrar seguimiento",
+        "description": "Permiso: QUALITY_MANAGER; If-Match",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "\"0\""
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FollowUp"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/audit-events": {
+      "get": {
+        "summary": "Consultar auditoría",
+        "description": "Permiso: SYSTEM_ADMIN, GOVERNANCE_MANAGER",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "Consultar cuentas del proyecto",
+        "description": "Permiso: SYSTEM_ADMIN; project_id obligatorio",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear cuenta y asignación",
+        "description": "Permiso: SYSTEM_ADMIN; project_id obligatorio",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUser"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "patch": {
+        "summary": "Cambiar activación de cuenta",
+        "description": "Permiso: SYSTEM_ADMIN en todos los proyectos afectados; If-Match; project_id obligatorio",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "\"0\""
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "active"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/roles": {
+      "get": {
+        "summary": "Consultar asignaciones",
+        "description": "Permiso: SYSTEM_ADMIN",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Asignar rol",
+        "description": "Permiso: SYSTEM_ADMIN",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRole"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/roles/{id}": {
+      "delete": {
+        "summary": "Revocar rol",
+        "description": "Permiso: SYSTEM_ADMIN; conserva al menos un administrador",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "description": "Token obtenido desde GET /session/csrf; renovar después del acceso/cierre.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada o aceptada."
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/csv-inputs/preview": {
+      "post": {
+        "summary": "Revisar CSV sin persistir",
+        "description": "Requiere QUALITY_MANAGER de todo el proyecto, sesión y CSRF. Las filas de incidencia corresponden a líneas físicas del CSV, con encabezado en la línea 1. No inicia una evaluación automáticamente.",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Archivo CSV UTF-8 con encabezados. Hasta 10.000 registros y 10.000.000 bytes."
+                  },
+                  "separator": {
+                    "type": "string",
+                    "enum": [
+                      "AUTO",
+                      "COMMA",
+                      "SEMICOLON",
+                      "TAB"
+                    ],
+                    "default": "AUTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vista previa con headers, row_count, byte_count, sha256 y hasta cinco preview_rows.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Límite de archivo, filas, columnas o longitud de celda excedido."
+          },
+          "422": {
+            "description": "CSV no UTF-8, encabezados repetidos, comillas o estructura de filas no válidos."
+          },
+          "403": {
+            "description": "Falta permiso para importar contenido en este proyecto o CSRF inválido."
+          }
+        }
+      }
+    },
+    "/projects/{project}/csv-inputs": {
+      "post": {
+        "summary": "Importar CSV cifrado o reutilizar activo idéntico",
+        "description": "Requiere QUALITY_MANAGER de todo el proyecto, sesión y CSRF. Reutiliza activo/captura del proyecto si coinciden SHA-256, separador real y tipos de columna; TEXT explícito y omitido son equivalentes. El nombre no cambia la identidad. La respuesta incluye import_reused. No inicia una evaluación automáticamente. Las incidencias indican líneas físicas del CSV, con encabezado en la línea 1.",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Archivo CSV UTF-8 con encabezados. Hasta 10.000 registros y 10.000.000 bytes."
+                  },
+                  "separator": {
+                    "type": "string",
+                    "enum": [
+                      "AUTO",
+                      "COMMA",
+                      "SEMICOLON",
+                      "TAB"
+                    ],
+                    "default": "AUTO"
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "column_types": {
+                    "type": "string",
+                    "default": "{}",
+                    "description": "Objeto JSON: nombre exacto de columna -> TEXT o NUMBER. Por defecto todas son TEXT. Los errores de datos no se descartan."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Carga idéntica: devuelve el activo existente y sus referencias con import_reused=true. No duplica reglas ni entradas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Nuevo activo CSV con id, metadata_version_id, snapshot_id, fields, source_kind=CSV, row_count, sha256 e import_reused=false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Límite de archivo, filas, columnas o longitud de celda excedido."
+          },
+          "422": {
+            "description": "CSV no UTF-8, encabezados repetidos, comillas o estructura de filas no válidos."
+          },
+          "403": {
+            "description": "Falta permiso para importar contenido en este proyecto o CSRF inválido."
+          }
+        }
+      }
+    },
+    "/projects/{project}/assets/{asset}/input": {
+      "get": {
+        "summary": "Consultar alcance y origen del archivo",
+        "description": "Permiso: QUALITY_MANAGER del activo. Solo metadatos: input_ref_id, metadata_version_id, snapshot_id/read_id, scope, input_row_count, input_byte_count, input_acquired_at, input_expires_at, input_complete e input_availability. No incluye filas ni vista previa.",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "asset",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/quality-incidents/{id}/evidence": {
+      "get": {
+        "summary": "Consultar explícitamente la evidencia de una incidencia",
+        "description": "Permiso: QUALITY_MANAGER del activo; no concede acceso implícito al administrador. Cache-Control: no-store. Devuelve available, reason, values limitado a campos implicados de la versión histórica, record_reference, snapshot_id/read_id y captured_at. Una entrada caducada/no disponible devuelve available=false sin consultar filas. Toda consulta efectiva queda auditada como INCIDENT_EVIDENCE_VIEWED. El listado de incidencias nunca incorpora estos valores.",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "La evidencia no debe almacenarse en caché."
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project}/assets/{asset}/quality-overview": {
+      "get": {
+        "summary": "Consultar últimas mediciones por dimensión del activo",
+        "description": "Permiso READ_RESULTS sobre el activo, con RLS. Devuelve data.latest_evaluation (objeto o null), data.results, data.rule_versions y data.dimension_evaluations (mapa de dimensión a evaluación de origen). Cada dimensión usa una única evaluación COMPLETED, la más reciente por submitted_at descendente e ID ascendente. Todas sus reglas medidas reemplazan las anteriores de esa dimensión; otras dimensiones se conservan. Una ejecución QUEUED, RUNNING o FAILED no sustituye mediciones completadas. No hay promedio ni aprobación global del activo. Las fechas, versiones y disponibilidad de entrada son históricas. No incluye valores del CSV.",
+        "parameters": [
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "asset",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada o aceptada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Problem Details; HTTP y status coinciden. 401 sesión, 403 permiso/CSRF, 404 recurso, 409 conflicto, 412 revisión obsoleta, 422 validación, 428 falta If-Match, 429 límite, 503 dependencia no disponible.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "M2SESSION_LOCAL"
+      }
+    },
+    "schemas": {
+      "Id": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      },
+      "Credentials": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "Definition": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "REQUIRED",
+              "UNIQUE_KEY",
+              "EMAIL",
+              "NUMBER_RANGE",
+              "ALLOWED_VALUES",
+              "FIELD_EQUALS",
+              "REFERENCE_EQUALS",
+              "FOREIGN_KEY",
+              "WITHIN_AGE"
+            ]
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true
+          },
+          "blank_is_missing": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "minimum": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "maximum": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "allowed_values": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "reference_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reference_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reference_key": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reference_field": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tolerance": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "max_age_seconds": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 315360000
+          }
+        },
+        "required": [
+          "kind",
+          "fields"
+        ],
+        "additionalProperties": false
+      },
+      "Version": {
+        "type": "object",
+        "properties": {
+          "dimension": {
+            "enum": [
+              "COMPLETENESS",
+              "ACCURACY",
+              "CONSISTENCY",
+              "UNIQUENESS",
+              "VALIDITY",
+              "TIMELINESS"
+            ]
+          },
+          "definition": {
+            "$ref": "#/components/schemas/Definition"
+          },
+          "threshold": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "minimum_coverage": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "critical": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "dimension",
+          "definition"
+        ],
+        "additionalProperties": false
+      },
+      "CreateRule": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          }
+        },
+        "required": [
+          "asset_id",
+          "name",
+          "version"
+        ],
+        "additionalProperties": false
+      },
+      "CreateEvaluation": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "metadata_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "rule_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true
+          },
+          "snapshot_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "expected_rule_versions": {
+            "type": "object",
+            "maxProperties": 20,
+            "propertyNames": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "description": "Opcional. Si se envía, debe contener exactamente rule_ids y las versiones inmutables revisadas. Un cambio vigente devuelve 412 RULE_VERSION_CHANGED sin crear la evaluación."
+          }
+        },
+        "required": [
+          "asset_id",
+          "metadata_version_id",
+          "rule_ids"
+        ],
+        "additionalProperties": false
+      },
+      "FollowUp": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "OPEN",
+              "IN_PROGRESS",
+              "RESOLVED",
+              "DISMISSED"
+            ]
+          },
+          "comment": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "Role": {
+        "enum": [
+          "SYSTEM_ADMIN",
+          "CATALOG_MANAGER",
+          "QUALITY_MANAGER",
+          "GOVERNANCE_MANAGER",
+          "BUSINESS_ANALYST"
+        ]
+      },
+      "CreateUser": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 128
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "asset_scope_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "CreateRole": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "asset_scope_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          }
+        },
+        "required": [
+          "user_id",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "Envelope": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {},
+          "meta": {
+            "type": "object",
+            "required": [
+              "request_id"
+            ],
+            "properties": {
+              "request_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              "page_info": {
+                "type": "object",
+                "required": [
+                  "page",
+                  "page_size",
+                  "returned_count",
+                  "has_next"
+                ],
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "page_size": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "returned_count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "has_next": {
+                    "type": "boolean"
+                  },
+                  "total_count": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "description": "Total filtrado de incidencias autorizadas. Opcional en otras listas."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Problem": {
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "instance",
+          "code",
+          "request_id"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 400,
+            "maximum": 599
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string",
+            "format": "uri"
+          },
+          "code": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:saulongo:schema:create-quality-evaluation:1",
+  "type": "object",
+  "required": [
+    "asset_id",
+    "metadata_version_id",
+    "rule_ids"
+  ],
+  "properties": {
+    "asset_id": {
+      "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+    },
+    "metadata_version_id": {
+      "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+    },
+    "rule_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+      },
+      "maxItems": 20
+    },
+    "snapshot_id": {
+      "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+    },
+    "expected_rule_versions": {
+      "type": "object",
+      "maxProperties": 20,
+      "propertyNames": {
+        "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+      },
+      "description": "Opcional. Si se envía, debe contener exactamente rule_ids y las versiones inmutables revisadas. Un cambio vigente devuelve 412 RULE_VERSION_CHANGED sin crear la evaluación."
+    }
+  },
+  "additionalProperties": false
+}

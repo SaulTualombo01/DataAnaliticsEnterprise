@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:saulongo:schema:quality-evaluation-accepted:1",
+  "type": "object",
+  "required": [
+    "data",
+    "meta"
+  ],
+  "properties": {
+    "data": {
+      "type": "object",
+      "required": [
+        "id",
+        "organization_id",
+        "project_id",
+        "asset_id",
+        "metadata_version_id",
+        "state",
+        "submitted_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+        },
+        "organization_id": {
+          "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+        },
+        "project_id": {
+          "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+        },
+        "asset_id": {
+          "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+        },
+        "metadata_version_id": {
+          "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+        },
+        "state": {
+          "const": "QUEUED"
+        },
+        "submitted_at": {
+          "$ref": "urn:saulongo:schema:common:1#/$defs/timestamp"
+        },
+        "snapshot_id": {
+          "$ref": "urn:saulongo:schema:common:1#/$defs/id"
+        }
+      },
+      "additionalProperties": true
+    },
+    "meta": {
+      "$ref": "urn:saulongo:schema:common:1#/$defs/response_meta"
+    }
+  },
+  "additionalProperties": true
+}
