@@ -1,0 +1,406 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tic:m1:consultas-http:1.0.0",
+  "$defs": {
+    "AssetRead": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "organization_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "project_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "kind": {
+          "enum": [
+            "table",
+            "csv_dataset",
+            "json_collection",
+            "api_collection"
+          ]
+        },
+        "origin": {
+          "$ref": "#/$defs/OriginLocator"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "missing",
+            "retired"
+          ]
+        },
+        "metadata_version_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "structure_origin": {
+          "enum": [
+            "declared",
+            "inferred"
+          ]
+        },
+        "business_description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "uniqueItems": true
+        },
+        "last_discovery_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        }
+      },
+      "required": [
+        "id",
+        "source_id",
+        "organization_id",
+        "project_id",
+        "name",
+        "kind",
+        "origin",
+        "status",
+        "metadata_version_id",
+        "structure_origin",
+        "business_description",
+        "tags",
+        "last_discovery_at",
+        "updated_at"
+      ],
+      "additionalProperties": true
+    },
+    "AssetResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/AssetRead"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": true
+    },
+    "FieldList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldRead"
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ListMeta"
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": true
+    },
+    "FieldRead": {
+      "type": "object",
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "metadata_version_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "native_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "logical_type": {
+          "enum": [
+            "string",
+            "integer",
+            "number",
+            "boolean",
+            "date",
+            "datetime",
+            "object",
+            "array",
+            "mixed",
+            "unknown"
+          ]
+        },
+        "nullable": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "business_description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "organization_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "project_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "missing"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "asset_id",
+        "metadata_version_id",
+        "name",
+        "path",
+        "position",
+        "native_type",
+        "logical_type",
+        "nullable",
+        "business_description",
+        "organization_id",
+        "project_id",
+        "status"
+      ],
+      "additionalProperties": true
+    },
+    "Identifier": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-f-]{36}$"
+    },
+    "ListMeta": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/ResponseMeta"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "page_info": {
+              "$ref": "#/$defs/PageInfo"
+            }
+          },
+          "required": [
+            "page_info"
+          ]
+        }
+      ]
+    },
+    "OriginLocator": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 500
+        },
+        "object_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "namespace",
+        "object_path"
+      ],
+      "additionalProperties": true
+    },
+    "PageInfo": {
+      "type": "object",
+      "required": [
+        "page",
+        "page_size",
+        "returned_count",
+        "has_next"
+      ],
+      "properties": {
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "returned_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "has_next": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Problem": {
+      "type": "object",
+      "required": [
+        "type",
+        "title",
+        "status",
+        "detail",
+        "instance",
+        "code",
+        "request_id"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "format": "uri"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "integer",
+          "minimum": 400,
+          "maximum": 599
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instance": {
+          "type": "string",
+          "format": "uri"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "request_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "errors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "location",
+              "field",
+              "code",
+              "message"
+            ],
+            "properties": {
+              "location": {
+                "enum": [
+                  "body",
+                  "query",
+                  "path"
+                ]
+              },
+              "field": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "ResponseMeta": {
+      "type": "object",
+      "required": [
+        "request_id"
+      ],
+      "properties": {
+        "request_id": {
+          "$ref": "#/$defs/Identifier"
+        }
+      },
+      "additionalProperties": true
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "ValidationProblem": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Problem"
+        },
+        {
+          "type": "object",
+          "required": [
+            "errors"
+          ],
+          "properties": {
+            "status": {
+              "const": 422
+            },
+            "code": {
+              "const": "VALIDATION_ERROR"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
