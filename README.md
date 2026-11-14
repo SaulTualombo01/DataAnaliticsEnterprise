@@ -18,8 +18,8 @@ pruebas y verificación del frontend; su ejecución remota requiere publicar los
 
 ## Contrato y mock TC13 (Q1)
 
-David Valencia es responsable técnico provisional de TC13. El candidato
-[TC13 0.1.0](docs/contratos/tc13/TC13.md) incluye OpenAPI, JSON Schema, ejemplos y
+David Valencia es responsable técnico provisional de TC13. La base técnica
+[TC13 1.0.0](docs/contratos/tc13/TC13.md) incluye OpenAPI, JSON Schema, ejemplos y
 un mock local para lecturas acotadas, recibos y capturas sintéticas. La revisión
 de M2/M3/M4 sigue pendiente; no es un servicio de extracción empresarial real.
 Ejecutar `python tools/mock_tc13.py` desde este checkout. El workflow valida
@@ -132,6 +132,11 @@ implican implementar el módulo ni conceder administración funcional al adminis
 La autenticación local con sesión/cookie y el contenedor web están implementados.
 La administración completa de usuarios sigue pendiente. El evaluador RBAC interno
 se describe en `docs/contratos/AutorizacionInterna.md`.
+
+V4 amplía la autorización a ORGANIZATION mediante designaciones explícitas de
+ADMIN_EMPRESA, sin convertirlas en asignaciones funcionales PROJECT. Las rutas
+administrativas nuevas utilizan tc.company.* y tc.company_administrators.*;
+los permisos de plataforma anteriores se conservan por compatibilidad del catálogo.
 
 ### Autorización interna
 

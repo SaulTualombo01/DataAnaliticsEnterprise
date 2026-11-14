@@ -10,6 +10,8 @@ import tempfile
 import xml.etree.ElementTree as ET
 
 root=Path(__file__).resolve().parents[1]
+if (root/'DataAnaliticsEnterprise/Backend/src/main/java/org/dataanaliticsent/catalogo/CatalogoApi.java').exists():
+    raise SystemExit('Para M1 usar tools/verificar_postgres.py, que prepara también el origen de datos de prueba.')
 pg=Path(os.environ.get('PG_BIN',r'C:\Program Files\PostgreSQL\18\bin'))
 base=Path(tempfile.mkdtemp(prefix='tic-tc-postgres-'))
 cluster=base/'cluster'; password_file=base/'temporary-password.txt'
