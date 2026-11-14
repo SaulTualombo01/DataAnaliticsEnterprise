@@ -61,6 +61,10 @@ public class SeguridadWebConfig {
                 .requestMatchers(HttpMethod.GET,"/api/v1/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/v1/auth/login","/api/v1/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/v1/auth/me").authenticated()
+                .requestMatchers(HttpMethod.GET,"/api/v1/admin/organizations","/api/v1/admin/organizations/*/administrators",
+                        "/api/v1/organizations/*","/api/v1/organizations/*/projects").authenticated()
+                .requestMatchers(HttpMethod.POST,"/api/v1/admin/organizations","/api/v1/admin/organizations/*/administrators",
+                        "/api/v1/admin/organizations/*/administrators/*/revocations","/api/v1/organizations/*/projects").authenticated()
                 .requestMatchers(HttpMethod.POST,"/api/v1/auth/password","/api/v1/admin/users/*/sessions/revoke").authenticated()
                 .anyRequest().denyAll())
             .exceptionHandling(errors->errors

@@ -51,6 +51,28 @@ public class PermisosJdbcAdapter implements RepositorioPermisos {
     }
 
     @Override
+    public boolean permisoOrganizacion(UUID usuarioId,String permiso,UUID organizacionId) {
+        return jdbc.sql("""
+                SELECT EXISTS(SELECT 1 FROM contexto.organizacion o JOIN identidad.usuario u ON u.id=:user
+                WHERE o.id=:org AND o.status='active' AND u.status='active' AND (
+                  EXISTS(SELECT 1 FROM autorizacion.administrador_empresa ae
+                    JOIN contexto.membresia_organizacion mo ON mo.id=ae.organization_membership_id
+                    JOIN autorizacion.rol r ON r.id=ae.role_id
+                    JOIN autorizacion.rol_permiso rp ON rp.role_id=r.id
+                    JOIN autorizacion.permiso p ON p.id=rp.permission_id
+                    WHERE ae.user_id=u.id AND ae.organization_id=o.id AND ae.status='active' AND ae.revoked_at IS NULL
+                      AND mo.status='active' AND r.code='ADMIN_EMPRESA' AND r.status='active'
+                      AND p.code=:permission AND p.operation_scope='ORGANIZATION' AND p.available)
+                  OR EXISTS(SELECT 1 FROM autorizacion.asignacion_rol ar
+                    JOIN autorizacion.rol r ON r.id=ar.role_id JOIN autorizacion.rol_permiso rp ON rp.role_id=r.id
+                    JOIN autorizacion.permiso p ON p.id=rp.permission_id
+                    WHERE ar.user_id=u.id AND ar.scope_type='PLATFORM' AND ar.status='active' AND ar.revoked_at IS NULL
+                      AND r.code='ADMIN_SISTEMA' AND r.status='active'
+                      AND p.code=:permission AND p.operation_scope='ORGANIZATION' AND p.available)))
+                """).param("user",usuarioId).param("org",organizacionId).param("permission",permiso).query(Boolean.class).single();
+    }
+
+    @Override
     public List<AlcanceAutorizado> alcances(UUID usuarioId, String permiso, UUID proyectoId) {
         return jdbc.sql("""
                 SELECT DISTINCT aa.project_id,aa.resource_scope,aa.source_id,aa.asset_id

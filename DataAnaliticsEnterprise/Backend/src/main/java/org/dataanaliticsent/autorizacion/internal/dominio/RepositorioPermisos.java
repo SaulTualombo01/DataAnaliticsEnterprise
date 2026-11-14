@@ -12,5 +12,6 @@ public interface RepositorioPermisos {
     Optional<Permiso> buscarPermiso(String codigo);
     boolean contextoVigente(UUID usuarioId, UUID proyectoId);
     boolean permisoPlataforma(UUID usuarioId, String permiso);
+    default boolean permisoOrganizacion(UUID usuarioId, String permiso, UUID organizacionId) { return false; }
     List<AlcanceAutorizado> alcances(UUID usuarioId, String permiso, UUID proyectoId);
 }

@@ -1,6 +1,6 @@
 # Autenticación local y sesiones del tronco común
 
-Decisión de David: cuentas locales y sesión del servidor con cookie. El contrato se acompaña de `autenticacion.openapi.json`. Este incremento no incorpora pantallas ni login institucional.
+Decisión de David: cuentas locales y sesión del servidor con cookie. El contrato se acompaña de `autenticacion.openapi.json`. La interfaz compartida incorpora el cliente de sesión; no hay login institucional. El bloque administrativo empresarial se documenta en AdministracionEmpresa.md y no sustituye la futura administración completa de cuentas.
 
 ## Operaciones
 

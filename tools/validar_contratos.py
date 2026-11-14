@@ -53,5 +53,21 @@ def main():
         if source.exists(): assert source.read_bytes()==(m1/filename).read_bytes(),filename
     print(f'OpenAPI TC13 válido; {len(examples)} ejemplos y fixture de identidad/contexto válidos.')
     print(f'OpenAPI M1 válido; {len(m1_examples)} ejemplos válidos. Base técnica v1.0.0.')
+    contexto_path=ROOT/'docs/contratos/contexto.schema.json'
+    if contexto_path.exists():
+        contexto=json.loads(contexto_path.read_text(encoding='utf-8'))
+        Draft202012Validator.check_schema(contexto)
+        validate(json.loads((ROOT/'docs/contratos/contexto.openapi.json').read_text(encoding='utf-8')))
+        evidence=ROOT/'DataAnaliticsEnterprise/target/contract-evidence/contexto.json'
+        if evidence.exists():
+            responses=json.loads(evidence.read_text(encoding='utf-8'))
+            for response in responses:
+                body=response['body']
+                Draft202012Validator({**contexto,'$ref':'#/$defs/'+response['schema']},format_checker=FormatChecker()).validate(body)
+                assert response['request_id_header']==body.get('request_id',body.get('meta',{}).get('request_id'))
+                if response['schema'].endswith('List'):
+                    assert len(body['data'])==body['meta']['page_info']['returned_count']
+            print(f'Contexto: {len(responses)} respuestas HTTP reales válidas.')
+        else: print('OpenAPI/Schema de contexto válidos; no hay evidencia HTTP local para validar en este checkout.')
 
 if __name__=='__main__': main()

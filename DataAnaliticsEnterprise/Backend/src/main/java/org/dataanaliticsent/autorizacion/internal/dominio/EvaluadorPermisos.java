@@ -30,6 +30,8 @@ public final class EvaluadorPermisos implements AutorizacionApi {
             case PLATFORM -> decision(datos.permisoPlataforma(actorId, solicitud.permiso())
                     ? Motivo.PERMITIDO : Motivo.PERMISO_NO_CONCEDIDO);
             case PROJECT -> evaluarProyecto(actorId, solicitud);
+            case ORGANIZATION -> decision(datos.permisoOrganizacion(actorId,solicitud.permiso(),solicitud.organizacionId())
+                    ? Motivo.PERMITIDO : Motivo.CONTEXTO_NO_AUTORIZADO);
         };
     }
 

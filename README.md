@@ -27,6 +27,13 @@ contratos y prueba el mock además de backend y frontend.
 
 ## Backend Spring Boot
 
+El primer bloque administrativo de Q2 incorpora ADMIN_EMPRESA y el ámbito
+ORGANIZATION: alta/consulta de empresas, designación/revocación por el sistema y
+alta/listado de proyectos dentro de la empresa autorizada. Contrato y límites:
+[Administración empresarial](docs/contratos/AdministracionEmpresa.md). V4 añade
+el sexto rol y seis permisos, sin cambiar las migraciones previas. El CRUD de
+cuentas, invitaciones, membresías/roles funcionales y sus pantallas sigue pendiente.
+
 El backend es un monolito modular con Spring Boot 4.1.2. La clase
 `org.dataanaliticsent.DataAnaliticsEnterprise` inicia la aplicación y detecta
 los componentes de los módulos que se añadan bajo `org.dataanaliticsent`.
@@ -75,8 +82,9 @@ mvn -f .\DataAnaliticsEnterprise\pom.xml spring-boot:run
 
 El servidor escucha en `http://localhost:8080`. La variable de entorno `PORT`
 permite cambiar el puerto. Detener con `Ctrl+C`.
-Todavía no hay endpoints de negocio ni página de inicio: una petición a `/`
-devuelve HTTP 404 aunque el servicio esté funcionando.
+No hay página de inicio en el backend: una petición a `/` sin sesión devuelve
+HTTP401 aunque el servicio funcione. La interfaz se sirve por separado y las
+operaciones administrativas están documentadas en contexto.openapi.json.
 
 ### Probar y empaquetar
 

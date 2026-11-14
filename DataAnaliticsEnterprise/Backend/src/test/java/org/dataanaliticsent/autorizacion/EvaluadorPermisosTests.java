@@ -34,6 +34,16 @@ class EvaluadorPermisosTests {
     @Test void identidadAusenteEsDenegada() {
         assertEquals(Motivo.SIN_IDENTIDAD, api.evaluar(null, solicitud()).motivo());
     }
+    @Test void organizacionNoSeConfundeConProyectoOPlataforma() {
+        assertThrows(IllegalArgumentException.class,()->SolicitudAcceso.organizacion("tc.company.projects.create",null));
+        assertThrows(IllegalArgumentException.class,()->new SolicitudAcceso("tc.users.read",SolicitudAcceso.Ambito.PLATFORM,null,null,null,UUID.randomUUID()));
+        assertThrows(IllegalArgumentException.class,()->new SolicitudAcceso("m1.assets.read",SolicitudAcceso.Ambito.PROJECT,project,null,null,UUID.randomUUID()));
+    }
+    @Test void adaptadorSinSoporteOrganizacionalDeniegaPorDefecto() {
+        datos.permisos.put("tc.company.projects.create",new RepositorioPermisos.Permiso(SolicitudAcceso.Ambito.ORGANIZATION,true));
+        assertFalse(api.evaluar(actor,SolicitudAcceso.organizacion("tc.company.projects.create",UUID.randomUUID())).permitido());
+        assertEquals(Motivo.AMBITO_INCORRECTO,api.evaluar(actor,SolicitudAcceso.plataforma("tc.company.projects.create")).motivo());
+    }
     @Test void cuentaInactivaEsDenegada() {
         datos.activa = false;
         assertEquals(Motivo.CUENTA_NO_ACTIVA, api.evaluar(actor, solicitud()).motivo());
