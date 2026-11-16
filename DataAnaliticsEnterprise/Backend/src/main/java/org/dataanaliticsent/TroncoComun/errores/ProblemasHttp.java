@@ -27,7 +27,7 @@ public class ProblemasHttp {
         Map<String,Object> body=new LinkedHashMap<>();
         body.put("type","about:blank"); body.put("title",switch(status) {
             case 400 -> "Solicitud inválida"; case 401 -> "Autenticación requerida";
-            case 403 -> "Acceso denegado"; case 409 -> "Conflicto"; case 415 -> "Formato no soportado";
+            case 413 -> "Solicitud demasiado grande"; case 403 -> "Acceso denegado"; case 409 -> "Conflicto"; case 415 -> "Formato no soportado";
             case 404 -> "Recurso no disponible"; case 422 -> "Parámetros inválidos";
             case 500 -> "Error interno"; case 429 -> "Demasiados intentos"; default -> "Servicio no disponible";
         });

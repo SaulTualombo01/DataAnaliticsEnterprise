@@ -238,3 +238,10 @@ decidir cambios en un redescubrimiento se desarrollará con ese caso de uso.
 Los componentes de M0 y sus pruebas se agrupan bajo `org.dataanaliticsent.TroncoComun`.
 La clase principal permanece en `org.dataanaliticsent`. Ver
 [estructura de M0](docs/Refactor_M0_TroncoComun.md) para imports y compilación limpia.
+
+## Cuentas e invitaciones
+
+Se incorpora la activación por invitación de un solo uso, consulta paginada y
+desactivación de cuentas con RBAC y revocación de accesos. Migración aditiva V5.
+La entrega manual exige INVITATION_MANUAL_DELIVERY_ENABLED=true; no se crean
+contraseñas predeterminadas. Ver [contrato](docs/contratos/CuentasInvitaciones.md).

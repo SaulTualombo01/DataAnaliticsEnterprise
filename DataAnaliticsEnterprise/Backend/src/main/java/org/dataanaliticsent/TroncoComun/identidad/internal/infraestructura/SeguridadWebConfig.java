@@ -29,8 +29,9 @@ import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.csrf.CsrfException;
 
 @Configuration
-@EnableConfigurationProperties(ParametrosIdentidad.class)
+@EnableConfigurationProperties({ParametrosIdentidad.class,ParametrosCuentas.class})
 public class SeguridadWebConfig {
+    @Bean PoliticaInvitaciones politicaInvitaciones(ParametrosCuentas p) { return new PoliticaInvitaciones(p.invitationTtl(),p.manualDeliveryEnabled()); }
     @Bean Clock relojIdentidad() { return Clock.systemUTC(); }
     @Bean PasswordEncoder passwordEncoder() {
         return new DelegatingPasswordEncoder("bcrypt",Map.of("bcrypt",new BCryptPasswordEncoder(12)));
@@ -52,7 +53,7 @@ public class SeguridadWebConfig {
         return new LimitadorIntentos(reloj,parametros.loginWindow(),parametros.loginAccountLimit(),parametros.loginIpLimit(),10000);
     }
     @Bean SecurityFilterChain seguridad(HttpSecurity http,DaoAuthenticationProvider provider,RepositorioIdentidad datos,
-            ProblemasHttp problemas,AuditoriaIdentidad auditoria,LimitadorIntentos limite,Clock reloj,ParametrosIdentidad parametros) throws Exception {
+            ProblemasHttp problemas,AuditoriaIdentidad auditoria,LimitadorIntentos limite,Clock reloj,ParametrosIdentidad parametros,ParametrosCuentas cuentas) throws Exception {
         http.authenticationProvider(provider)
             .requestCache(cache->cache.disable())
             .httpBasic(basic->basic.disable())
@@ -60,6 +61,10 @@ public class SeguridadWebConfig {
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/v1/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/v1/auth/login","/api/v1/auth/logout").permitAll()
+                .requestMatchers(HttpMethod.POST,"/api/v1/auth/invitations/accept").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/v1/admin/users","/api/v1/organizations/*/users","/api/v1/organizations/*/invitations").authenticated()
+                .requestMatchers(HttpMethod.POST,"/api/v1/organizations/*/invitations","/api/v1/organizations/*/invitations/*/revocations",
+                    "/api/v1/admin/users/*/deactivations","/api/v1/organizations/*/users/*/deactivations").authenticated()
                 .requestMatchers(HttpMethod.GET,"/api/v1/auth/me").authenticated()
                 .requestMatchers(HttpMethod.GET,"/api/v1/admin/organizations","/api/v1/admin/organizations/*/administrators",
                         "/api/v1/organizations/*","/api/v1/organizations/*/projects").authenticated()
@@ -105,6 +110,7 @@ public class SeguridadWebConfig {
                     res.setStatus(204);
                 }));
         http.addFilterAfter(new FiltroVigenciaSesion(datos,problemas,reloj,parametros.absoluteSessionTimeout()),SecurityContextHolderFilter.class);
+        http.addFilterBefore(new FiltroActivacion(reloj,cuentas,problemas),UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(new FiltroLimiteLogin(limite,problemas,auditoria,parametros.loginWindow()),UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
