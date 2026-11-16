@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -6,7 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/components/ui/toast'
+import { fetchCatalogAssets } from '@/services/catalogMock'
+import type { Asset } from '@/shared/contracts'
 
 // Mismos valores que KpiCategory en docs/contratos/m4/analitica-http.schema.json.
 const CATEGORIES = [
@@ -17,37 +21,36 @@ const CATEGORIES = [
   { value: 'comercial', label: 'Comercial' },
 ] as const
 
-// Sintético: el catálogo de M1 aún no expone activos. Sustituir por su consulta cuando exista.
-const DATA_SOURCES = [
-  { value: 'ventas_historicas', label: 'ventas_historicas' },
-  { value: 'sesiones_web', label: 'sesiones_web' },
-  { value: 'inventario', label: 'inventario' },
-] as const
+const DATA_SOURCE_REQUIRED = 'Selecciona una fuente de datos'
 
-const kpiSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(3, 'El nombre debe tener al menos 3 caracteres')
-    .max(120, 'El nombre no puede superar 120 caracteres'),
-  category: z.enum(
-    CATEGORIES.map((category) => category.value),
-    { error: 'Selecciona una categoría' },
-  ),
-  dataSource: z.enum(
-    DATA_SOURCES.map((source) => source.value),
-    { error: 'Selecciona una fuente de datos' },
-  ),
-  alertThreshold: z
-    .string()
-    .trim()
-    .min(1, 'Ingresa un umbral de alerta')
-    .transform(Number)
-    .pipe(z.number({ error: 'El umbral debe ser un número' })),
-})
+function buildKpiSchema(assetIds: ReadonlySet<string>) {
+  return z.object({
+    name: z
+      .string()
+      .trim()
+      .min(3, 'El nombre debe tener al menos 3 caracteres')
+      .max(120, 'El nombre no puede superar 120 caracteres'),
+    category: z.enum(
+      CATEGORIES.map((category) => category.value),
+      { error: 'Selecciona una categoría' },
+    ),
+    dataSource: z
+      .string({ error: DATA_SOURCE_REQUIRED })
+      .refine((assetId) => assetIds.has(assetId), DATA_SOURCE_REQUIRED),
+    alertThreshold: z
+      .string()
+      .trim()
+      .min(1, 'Ingresa un umbral de alerta')
+      .transform(Number)
+      .pipe(z.number({ error: 'El umbral debe ser un número' })),
+  })
+}
 
-type KpiFormInput = z.input<typeof kpiSchema>
-type KpiFormOutput = z.output<typeof kpiSchema>
+type KpiSchema = ReturnType<typeof buildKpiSchema>
+type KpiFormInput = z.input<KpiSchema>
+type KpiFormOutput = z.output<KpiSchema>
+
+type CatalogState = { status: 'loading' } | { status: 'error' } | { status: 'ready'; assets: Asset[] }
 
 const EMPTY_FORM: Partial<KpiFormInput> = {
   name: '',
@@ -57,8 +60,33 @@ const EMPTY_FORM: Partial<KpiFormInput> = {
 }
 
 function KpiBuilderForm() {
+  const [catalog, setCatalog] = useState<CatalogState>({ status: 'loading' })
+
+  useEffect(() => {
+    let cancelled = false
+    fetchCatalogAssets()
+      .then((assets) => {
+        if (!cancelled) setCatalog({ status: 'ready', assets })
+      })
+      .catch(() => {
+        if (!cancelled) setCatalog({ status: 'error' })
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const dataSources = useMemo(
+    () => (catalog.status === 'ready' ? catalog.assets.map((asset) => ({ value: asset.id, label: asset.name })) : []),
+    [catalog],
+  )
+  const resolver = useMemo(
+    () => zodResolver(buildKpiSchema(new Set(dataSources.map((source) => source.value)))),
+    [dataSources],
+  )
+
   const form = useForm<KpiFormInput, unknown, KpiFormOutput>({
-    resolver: zodResolver(kpiSchema),
+    resolver,
     defaultValues: EMPTY_FORM,
     mode: 'onChange',
   })
@@ -127,24 +155,38 @@ function KpiBuilderForm() {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="kpi-data-source">Fuente de datos</FieldLabel>
-              <Select items={DATA_SOURCES} value={field.value ?? null} onValueChange={field.onChange}>
-                <SelectTrigger
-                  id="kpi-data-source"
-                  className="w-full"
-                  aria-invalid={fieldState.invalid}
-                  onBlur={field.onBlur}
+              {catalog.status === 'loading' ? (
+                <Skeleton className="h-8 w-full" aria-busy="true" aria-label="Cargando fuentes de datos" />
+              ) : (
+                <Select
+                  name={field.name}
+                  items={dataSources}
+                  value={field.value ?? null}
+                  onValueChange={field.onChange}
+                  disabled={catalog.status === 'error'}
                 >
-                  <SelectValue placeholder="Selecciona una tabla" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DATA_SOURCES.map((source) => (
-                    <SelectItem key={source.value} value={source.value}>
-                      {source.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldDescription>Tablas sintéticas de e-commerce.</FieldDescription>
+                  <SelectTrigger
+                    id="kpi-data-source"
+                    className="w-full"
+                    aria-invalid={fieldState.invalid}
+                    onBlur={field.onBlur}
+                  >
+                    <SelectValue placeholder="Selecciona un activo del catálogo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dataSources.map((source) => (
+                      <SelectItem key={source.value} value={source.value}>
+                        {source.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {catalog.status === 'error' ? (
+                <FieldError>No se pudo cargar el catálogo de activos. Recarga la página para reintentar.</FieldError>
+              ) : (
+                <FieldDescription>Activos sintéticos del catálogo (M1).</FieldDescription>
+              )}
               <FieldError errors={[fieldState.error]} />
             </Field>
           )}
