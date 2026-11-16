@@ -92,5 +92,35 @@ def main():
             count=len(responses)
         print(f'Cuentas: OpenAPI/Schema válidos; {len(samples)} ejemplos y {count} respuestas HTTP sin secretos válidos.')
 
+    path=ROOT/'docs/contratos/participacion.schema.json'
+    if path.exists():
+        participation=json.loads(path.read_text(encoding='utf-8'))
+        Draft202012Validator.check_schema(participation)
+        validate(json.loads((ROOT/'docs/contratos/participacion.openapi.json').read_text(encoding='utf-8')))
+        samples=json.loads((ROOT/'docs/contratos/participacion.examples.json').read_text(encoding='utf-8'))
+        for sample in samples.values():
+            Draft202012Validator({**participation,'$ref':'#/$defs/'+sample['schema']},format_checker=FormatChecker()).validate(sample['body'])
+        evidence=ROOT/'DataAnaliticsEnterprise/target/contract-evidence/participacion.json'
+        count=0
+        if evidence.exists():
+            responses=json.loads(evidence.read_text(encoding='utf-8'))
+            for response in responses:
+                body=response['body']
+                Draft202012Validator({**participation,'$ref':'#/$defs/'+response['schema']},format_checker=FormatChecker()).validate(body)
+                assert response['request_id_header']==body.get('request_id',body.get('meta',{}).get('request_id'))
+                if 'page_info' in body.get('meta',{}): assert len(body['data'])==body['meta']['page_info']['returned_count']
+                assert 'password_hash' not in json.dumps(body) and 'activation_token' not in json.dumps(body)
+            count=len(responses)
+        print(f'Participacion: OpenAPI/Schema validos; {len(samples)} ejemplos y {count} respuestas HTTP validas.')
+
+        admin_evidence=ROOT/'DataAnaliticsEnterprise/target/contract-evidence/administracion.json'
+        if admin_evidence.exists():
+            responses=json.loads(admin_evidence.read_text(encoding='utf-8'))
+            for response in responses:
+                body=response['body']
+                Draft202012Validator({**participation,'$ref':'#/$defs/'+response['schema']},format_checker=FormatChecker()).validate(body)
+                assert response['request_id_header']==body.get('request_id',body.get('meta',{}).get('request_id'))
+                assert 'activation_token' not in json.dumps(body) and 'password_hash' not in json.dumps(body)
+            print(f'TC-10: {len(responses)} respuestas HTTP de capacidades/rol vigente validas.')
 
 if __name__=='__main__': main()

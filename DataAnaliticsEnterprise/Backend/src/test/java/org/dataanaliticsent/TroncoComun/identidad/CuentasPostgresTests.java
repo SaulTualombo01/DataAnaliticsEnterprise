@@ -147,10 +147,8 @@ class CuentasPostgresTests {
         var user=api.activar(invitar(f.org()).activationToken(),PASSWORD); actor.set(admin);
         api.desactivarEmpleado(f.org(),user.id(),"Baja"); assertEquals("inactive",api.listarEmpleados(f.org(),1,25).data().stream().filter(u->u.id().equals(user.id())).findFirst().orElseThrow().status());
         actor.set(f.global()); var shared=api.activar(invitar(f.org()).activationToken(),PASSWORD); UUID b=contexto.crearOrganizacion("B","Prueba").id();
-        jdbc.sql("INSERT INTO contexto.membresia_organizacion(id,user_id,organization_id,assigned_by) VALUES(:id,:user,:org,:actor)").param("id",UUID.randomUUID()).param("user",shared.id()).param("org",b).param("actor",f.global()).update();
-        actor.set(admin);
-        assertEquals(CuentasException.Tipo.CONFLICTO,assertThrows(CuentasException.class,()->api.desactivarEmpleado(f.org(),shared.id(),"Cuenta heredada con dos empresas activas")).tipo());
-        assertEquals("active",jdbc.sql("SELECT status FROM identidad.usuario WHERE id=:id").param("id",shared.id()).query(String.class).single());
+        assertThrows(DataIntegrityViolationException.class,()->jdbc.sql("INSERT INTO contexto.membresia_organizacion(id,user_id,organization_id,assigned_by) VALUES(:id,:user,:org,:actor)").param("id",UUID.randomUUID()).param("user",shared.id()).param("org",b).param("actor",f.global()).update());
+        actor.set(admin); api.desactivarEmpleado(f.org(),shared.id(),"Baja dentro de una única empresa");
     }
     private void retirarAdministradoresPrevios() {
         // Solo datos sintéticos en el clúster desechable de pruebas.

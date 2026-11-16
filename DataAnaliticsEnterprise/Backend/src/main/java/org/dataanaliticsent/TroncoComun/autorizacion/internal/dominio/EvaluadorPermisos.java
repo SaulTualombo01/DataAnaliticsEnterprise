@@ -46,7 +46,7 @@ public final class EvaluadorPermisos implements AutorizacionApi {
     }
 
     private DecisionAcceso evaluarProyecto(UUID actorId, SolicitudAcceso solicitud) {
-        if (!datos.contextoVigente(actorId, solicitud.proyectoId())) return decision(Motivo.CONTEXTO_NO_AUTORIZADO);
+        if (!datos.contextoVigente(actorId, solicitud.proyectoId(),solicitud.permiso())) return decision(Motivo.CONTEXTO_NO_AUTORIZADO);
         var alcances = datos.alcances(actorId, solicitud.permiso(), solicitud.proyectoId());
         if (alcances.isEmpty()) return decision(Motivo.PERMISO_NO_CONCEDIDO);
         if (solicitud.recurso() == null) {
@@ -73,7 +73,7 @@ public final class EvaluadorPermisos implements AutorizacionApi {
     @Override
     public List<AlcanceAutorizado> alcancesPermitidos(UUID actorId, String permiso, UUID proyectoId) {
         var solicitud = SolicitudAcceso.proyecto(permiso, proyectoId);
-        if (!validarBase(actorId, solicitud).permitido() || !datos.contextoVigente(actorId, proyectoId)) return List.of();
+        if (!validarBase(actorId, solicitud).permitido() || !datos.contextoVigente(actorId, proyectoId,permiso)) return List.of();
         return datos.alcances(actorId, permiso, proyectoId).stream()
                 .filter(a -> a.proyectoId().equals(proyectoId)).filter(this::alcanceResuelto).distinct().toList();
     }

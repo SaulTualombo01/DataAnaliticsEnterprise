@@ -36,6 +36,13 @@ public class CuentasJdbcAdapter implements RepositorioCuentas {
         return new Invitacion(r.getObject("id",UUID.class),r.getObject("organization_id",UUID.class),r.getString("email"),r.getString("display_name"),
             r.getObject("invited_by",UUID.class),status,r.getTimestamp("created_at").toInstant(),expires,r.getObject("accepted_user_id",UUID.class));
     }
+    @Override public DetalleCuenta detalle(UUID user) {
+        return jdbc.sql("SELECT id,email,display_name,status,created_at,admin_revision FROM identidad.usuario WHERE id=:id").param("id",user)
+            .query((r,n)->new DetalleCuenta(cuenta(r,n),r.getLong("admin_revision"))).optional().orElseThrow(()->new CuentasException(CuentasException.Tipo.NO_DISPONIBLE));
+    }
+    @Override public DetalleCuenta editarNombre(UUID user,String name) {
+        jdbc.sql("UPDATE identidad.usuario SET display_name=:name WHERE id=:id").param("name",name).param("id",user).update(); return detalle(user);
+    }
     @Override public void bloquearAdministracion() { jdbc.sql("SELECT pg_advisory_xact_lock(937245813)").query((r,n)->true).single(); }
     @Override public boolean bloquearEmpresaActiva(UUID org) {
         return jdbc.sql("SELECT status FROM contexto.organizacion WHERE id=:id FOR SHARE").param("id",org).query(String.class).optional().filter("active"::equals).isPresent();

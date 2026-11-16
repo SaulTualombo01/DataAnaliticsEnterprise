@@ -65,7 +65,19 @@ public class SeguridadWebConfig {
                 .requestMatchers(HttpMethod.GET,"/api/v1/admin/users","/api/v1/organizations/*/users","/api/v1/organizations/*/invitations").authenticated()
                 .requestMatchers(HttpMethod.POST,"/api/v1/organizations/*/invitations","/api/v1/organizations/*/invitations/*/revocations",
                     "/api/v1/admin/users/*/deactivations","/api/v1/organizations/*/users/*/deactivations").authenticated()
-                .requestMatchers(HttpMethod.GET,"/api/v1/auth/me").authenticated()
+                .requestMatchers(HttpMethod.GET,"/api/v1/admin/users/*","/api/v1/organizations/*/users/*",
+                    "/api/v1/organizations/*/memberships","/api/v1/organizations/*/functional-roles",
+                    "/api/v1/organizations/*/projects/*","/api/v1/organizations/*/projects/*/memberships",
+                    "/api/v1/organizations/*/projects/*/memberships/*/roles","/api/v1/organizations/*/projects/*/memberships/*/role",
+                    "/api/v1/auth/contexts","/api/v1/auth/context","/api/v1/auth/contexts/*/permissions").authenticated()
+                .requestMatchers(HttpMethod.PATCH,"/api/v1/admin/users/*","/api/v1/organizations/*/users/*","/api/v1/organizations/*/projects/*").authenticated()
+                .requestMatchers(HttpMethod.PUT,"/api/v1/organizations/*/projects/*/memberships/*/role").authenticated()
+                .requestMatchers(HttpMethod.POST,"/api/v1/organizations/*/memberships/*/revocations","/api/v1/organizations/*/memberships/*/reactivations",
+                    "/api/v1/organizations/*/projects/*/archivals","/api/v1/organizations/*/projects/*/reactivations",
+                    "/api/v1/organizations/*/projects/*/memberships","/api/v1/organizations/*/projects/*/memberships/*/revocations",
+                    "/api/v1/organizations/*/projects/*/memberships/*/reactivations",
+                    "/api/v1/organizations/*/projects/*/memberships/*/roles/*/revocations","/api/v1/auth/context").authenticated()
+                .requestMatchers(HttpMethod.GET,"/api/v1/auth/me","/api/v1/auth/administration").authenticated()
                 .requestMatchers(HttpMethod.GET,"/api/v1/admin/organizations","/api/v1/admin/organizations/*/administrators",
                         "/api/v1/organizations/*","/api/v1/organizations/*/projects").authenticated()
                 .requestMatchers(HttpMethod.POST,"/api/v1/admin/organizations","/api/v1/admin/organizations/*/administrators",

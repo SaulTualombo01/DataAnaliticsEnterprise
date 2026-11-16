@@ -50,6 +50,30 @@ public class ServicioCuentas implements CuentasApi {
     private static <T> Pagina<T> pagina(List<T> rows,int page,int size) {
         return new Pagina<>(rows.size()>size?rows.subList(0,size):rows,page,size,rows.size()>size);
     }
+    @Override @Transactional(readOnly=true) public DetalleCuenta consultarUsuario(UUID user) {
+        actor(SolicitudAcceso.plataforma("tc.users.read"),false); return datos.detalle(id(user));
+    }
+    @Override @Transactional(readOnly=true) public DetalleCuenta consultarEmpleado(UUID org,UUID user) {
+        actor(SolicitudAcceso.organizacion("tc.company.users.read",id(org)),false);
+        if(!datos.pertenece(id(user),org)) throw error(CuentasException.Tipo.NO_DISPONIBLE); return datos.detalle(user);
+    }
+    private DetalleCuenta editar(UUID actor,UUID org,UUID user,String nombre,long revision,String motivo) {
+        nombre=texto(nombre,200); motivo=texto(motivo,500); if(revision<0) throw error(CuentasException.Tipo.INVALIDO);
+        var old=datos.bloquearCuenta(id(user)); var detail=datos.detalle(user);
+        if(detail.revision()!=revision) throw error(CuentasException.Tipo.CONFLICTO);
+        if(old.displayName().equals(nombre)) return detail;
+        var result=datos.editarNombre(user,nombre); datos.auditar(actor,org,user,"tc.user.update",motivo,user); return result;
+    }
+    @Override public DetalleCuenta editarUsuario(UUID user,String nombre,long revision,String motivo) {
+        var s=SolicitudAcceso.plataforma("tc.users.update"); UUID actor=actor(s,true);
+        var result=editar(actor,null,user,nombre,revision,motivo); permisos.exigir(actor,s); return result;
+    }
+    @Override public DetalleCuenta editarEmpleado(UUID org,UUID user,String nombre,long revision,String motivo) {
+        var s=SolicitudAcceso.organizacion("tc.company.users.update",id(org)); UUID actor=actor(s,true); empresa(org);
+        if(!datos.pertenece(id(user),org)) throw error(CuentasException.Tipo.NO_DISPONIBLE);
+        if(actor.equals(user) || datos.administrador(user) || datos.otraEmpresaActiva(user,org)) throw error(CuentasException.Tipo.CONFLICTO);
+        var result=editar(actor,org,user,nombre,revision,motivo); permisos.exigir(actor,s); return result;
+    }
     @Override public EntregaInvitacion invitar(UUID org,String email,String nombre,String motivo) {
         var s=SolicitudAcceso.organizacion("tc.company.users.invite",id(org)); UUID actor=actor(s,true); empresa(org);
         email=correo(email); nombre=texto(nombre,200); motivo=texto(motivo,500);

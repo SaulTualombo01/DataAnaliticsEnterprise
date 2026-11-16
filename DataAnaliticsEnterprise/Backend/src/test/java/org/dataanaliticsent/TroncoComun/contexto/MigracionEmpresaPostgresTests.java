@@ -33,6 +33,23 @@ class MigracionEmpresaPostgresTests {
             try(var rows=sql.executeQuery("SELECT count(*) FROM auditoria.evento WHERE id='"+event+"' AND action='prueba.pre_v4'")) { assertTrue(rows.next()); assertEquals(1,rows.getInt(1)); }
             try(var rows=sql.executeQuery("SELECT count(*) FROM autorizacion.rol")) { assertTrue(rows.next()); assertEquals(6,rows.getInt(1)); }
             try(var rows=sql.executeQuery("SELECT count(*) FROM autorizacion.administrador_empresa")) { assertTrue(rows.next()); assertEquals(0,rows.getInt(1)); }
+            // Datos heredados conflictivos en una base dedicada: V6 debe abortar sin reparar ni borrar.
+            UUID other=UUID.randomUUID(),om=UUID.randomUUID(),otherOm=UUID.randomUUID(),project=UUID.randomUUID(),pm=UUID.randomUUID(),a=UUID.randomUUID(),b=UUID.randomUUID();
+            sql.execute("INSERT INTO contexto.organizacion(id,name) VALUES('"+other+"','Otra empresa')");
+            sql.execute("INSERT INTO contexto.membresia_organizacion(id,user_id,organization_id,assigned_by) VALUES('"+om+"','"+account+"','"+org+"','"+account+"'),('"+otherOm+"','"+account+"','"+other+"','"+account+"')");
+            sql.execute("INSERT INTO contexto.proyecto(id,organization_id,name) VALUES('"+project+"','"+org+"','Proyecto anterior')");
+            sql.execute("INSERT INTO contexto.membresia_proyecto(id,organization_membership_id,user_id,organization_id,project_id,assigned_by) VALUES('"+pm+"','"+om+"','"+account+"','"+org+"','"+project+"','"+account+"')");
+            sql.execute("INSERT INTO autorizacion.asignacion_rol(id,user_id,role_id,scope_type,project_membership_id,project_id,assigned_by) SELECT '"+a+"','"+account+"',id,'PROJECT','"+pm+"','"+project+"','"+account+"' FROM autorizacion.rol WHERE code='GESTOR_CATALOGO'");
+            sql.execute("INSERT INTO autorizacion.asignacion_rol(id,user_id,role_id,scope_type,project_membership_id,project_id,assigned_by) SELECT '"+b+"','"+account+"',id,'PROJECT','"+pm+"','"+project+"','"+account+"' FROM autorizacion.rol WHERE code='ANALISTA_CALIDAD'");
+            var v6=Flyway.configure().dataSource(url,user,password).locations("classpath:db/migration").target("6").load();
+            assertThrows(org.flywaydb.core.api.FlywayException.class,()->v6.migrate()); assertEquals("5",v6.info().current().getVersion().getVersion());
+            sql.execute("UPDATE contexto.membresia_organizacion SET status='inactive' WHERE id='"+otherOm+"'");
+            assertThrows(org.flywaydb.core.api.FlywayException.class,()->v6.migrate()); assertEquals("5",v6.info().current().getVersion().getVersion());
+            sql.execute("UPDATE autorizacion.asignacion_rol SET status='inactive',revoked_at=now() WHERE id='"+b+"'");
+            assertEquals(1,v6.migrate().migrationsExecuted); assertEquals("6",v6.info().current().getVersion().getVersion()); assertEquals(0,v6.migrate().migrationsExecuted);
+            try(var rows=sql.executeQuery("SELECT admin_revision,email FROM identidad.usuario WHERE id='"+account+"'")) { assertTrue(rows.next()); assertEquals(0,rows.getLong(1)); assertEquals(account+"@example.test",rows.getString(2)); }
+            try(var rows=sql.executeQuery("SELECT count(*) FROM autorizacion.asignacion_rol WHERE id IN ('"+a+"','"+b+"')")) { assertTrue(rows.next()); assertEquals(2,rows.getInt(1)); }
+            try(var rows=sql.executeQuery("SELECT count(*) FROM auditoria.evento WHERE id='"+event+"'")) { assertTrue(rows.next()); assertEquals(1,rows.getInt(1)); }
         }
     }
 }

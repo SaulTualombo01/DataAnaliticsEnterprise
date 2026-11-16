@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(assignableTypes=ContextoController.class)
+@RestControllerAdvice(assignableTypes={ContextoController.class,ParticipacionController.class,AdministracionActualController.class})
 public class ErroresContextoHttp {
     private final ProblemasHttp salida;
     public ErroresContextoHttp(ProblemasHttp salida) { this.salida=salida; }

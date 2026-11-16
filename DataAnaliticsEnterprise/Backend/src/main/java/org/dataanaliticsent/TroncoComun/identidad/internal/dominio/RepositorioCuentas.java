@@ -8,6 +8,8 @@ import org.dataanaliticsent.TroncoComun.identidad.CuentasApi.*;
 
 public interface RepositorioCuentas {
     record Pendiente(Invitacion invitation,String status) { }
+    DetalleCuenta detalle(UUID user);
+    DetalleCuenta editarNombre(UUID user,String name);
     void bloquearAdministracion();
     boolean bloquearEmpresaActiva(UUID org);
     Cuenta bloquearCuenta(UUID user);

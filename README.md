@@ -245,3 +245,11 @@ Se incorpora la activación por invitación de un solo uso, consulta paginada y
 desactivación de cuentas con RBAC y revocación de accesos. Migración aditiva V5.
 La entrega manual exige INVITATION_MANUAL_DELIVERY_ENABLED=true; no se crean
 contraseñas predeterminadas. Ver [contrato](docs/contratos/CuentasInvitaciones.md).
+
+## Participación empresarial y proyectos
+
+TC-08/09 incorpora pertenencias, membresías, rol funcional único por proyecto,
+alcances explícitos e historial de revocaciones. Los proyectos archivados
+permiten únicamente las lecturas autorizadas. Incluye capacidades administrativas
+y contexto de trabajo para el futuro frontend TC-10. Migración aditiva V6.
+Ver [contratos y reglas](docs/contratos/TC08_TC09.md).

@@ -38,6 +38,16 @@ public class PermisosJdbcAdapter implements RepositorioPermisos {
                 """).param("user",usuarioId).param("project",proyectoId).query(Boolean.class).single();
     }
 
+    @Override public boolean contextoVigente(UUID usuarioId,UUID proyectoId,String permiso) {
+        return jdbc.sql("""
+            SELECT EXISTS(SELECT 1 FROM contexto.membresia_proyecto mp JOIN contexto.membresia_organizacion mo ON mo.id=mp.organization_membership_id
+            JOIN contexto.proyecto pr ON pr.id=mp.project_id JOIN contexto.organizacion o ON o.id=pr.organization_id
+            JOIN identidad.usuario u ON u.id=mp.user_id JOIN autorizacion.permiso pe ON pe.code=:permission
+            WHERE mp.user_id=:user AND mp.project_id=:project AND mp.status='active' AND mo.status='active' AND u.status='active' AND o.status='active'
+            AND (pr.status='active' OR (pr.status='archived' AND pe.archived_read AND pe.operation_scope='PROJECT' AND pe.available)))
+            """).param("user",usuarioId).param("project",proyectoId).param("permission",permiso).query(Boolean.class).single();
+    }
+
     @Override
     public boolean permisoPlataforma(UUID usuarioId, String permiso) {
         return jdbc.sql("""
@@ -86,7 +96,7 @@ public class PermisosJdbcAdapter implements RepositorioPermisos {
                 WHERE ar.user_id=:user AND ar.project_id=:project AND ar.scope_type='PROJECT'
                   AND ar.status='active' AND ar.revoked_at IS NULL AND r.status='active' AND pe.available
                   AND pe.code=:permission AND pe.operation_scope='PROJECT' AND mp.status='active' AND mo.status='active'
-                  AND pr.status='active' AND o.status='active' AND u.status='active'
+                  AND (pr.status='active' OR (pr.status='archived' AND pe.archived_read)) AND o.status='active' AND u.status='active'
                 ORDER BY aa.resource_scope,aa.source_id,aa.asset_id
                 """).param("user",usuarioId).param("project",proyectoId).param("permission",permiso)
                 .query((r,n) -> new AlcanceAutorizado(r.getObject("project_id",UUID.class),

@@ -2,8 +2,8 @@
   "openapi": "3.1.1",
   "info": {
     "title": "Administración contextual: empresas y proyectos",
-    "version": "1.0.0",
-    "description": "Primer bloque de Q2. Empresa y administrador limitados al contexto; no contiene CRUD de cuentas, invitaciones o asignación funcional."
+    "version": "2.0.0",
+    "description": "Empresa/proyectos y designaciones. Estado archived añadido por TC-09: actualizar consumidores con enumeración cerrada. Nuevas operaciones de ciclo de vida en participacion.openapi.json. M1/TC13 conservan su contrato1.0.0."
   },
   "servers": [
     {
@@ -127,7 +127,8 @@
           "status": {
             "enum": [
               "active",
-              "inactive"
+              "inactive",
+              "archived"
             ]
           },
           "created_at": {
@@ -1535,5 +1536,6 @@
         }
       }
     }
-  }
+  },
+  "x-migration-note": "Versión mayor por ampliar el enum de proyecto; entorno local sin publicar. Actualizar los consumidores antes de integrar; rutas /api/v1 existentes conservadas."
 }

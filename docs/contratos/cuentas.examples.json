@@ -105,5 +105,31 @@
       "code": "ACCOUNT_CONFLICT",
       "request_id": "11111111-1111-4111-8111-111111111111"
     }
+  },
+  "edit_request": {
+    "schema": "EditRequest",
+    "body": {
+      "display_name": "Nombre corregido",
+      "expected_revision": 0,
+      "reason": "Corrección autorizada"
+    }
+  },
+  "account_detail": {
+    "schema": "AccountDetailResponse",
+    "body": {
+      "data": {
+        "account": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "email": "empleado@example.test",
+          "display_name": "Empleado de ejemplo",
+          "status": "active",
+          "created_at": "2026-11-14T00:05:00Z"
+        },
+        "revision": 0
+      },
+      "meta": {
+        "request_id": "11111111-1111-4111-8111-111111111111"
+      }
+    }
   }
 }

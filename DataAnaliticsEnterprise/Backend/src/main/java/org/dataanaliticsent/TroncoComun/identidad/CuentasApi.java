@@ -15,6 +15,11 @@ public interface CuentasApi {
     record Pagina<T>(List<T> data,int page,int pageSize,boolean hasNext) {
         public Pagina { data=List.copyOf(data); }
     }
+    record DetalleCuenta(Cuenta account,long revision) { }
+    DetalleCuenta consultarUsuario(UUID usuario);
+    DetalleCuenta consultarEmpleado(UUID org,UUID usuario);
+    DetalleCuenta editarUsuario(UUID usuario,String nombre,long revision,String motivo);
+    DetalleCuenta editarEmpleado(UUID org,UUID usuario,String nombre,long revision,String motivo);
     EntregaInvitacion invitar(UUID organizacion,String email,String nombre,String motivo);
     Pagina<Invitacion> listarInvitaciones(UUID organizacion,int pagina,int tamano);
     void revocarInvitacion(UUID organizacion,UUID invitacion,String motivo);

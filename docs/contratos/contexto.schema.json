@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:tic:contexto-administrativo:1.0.0",
+  "$id": "urn:tic:contexto-administrativo:2.0.0",
   "$defs": {
     "CreateRequest": {
       "type": "object",
@@ -110,7 +110,8 @@
         "status": {
           "enum": [
             "active",
-            "inactive"
+            "inactive",
+            "archived"
           ]
         },
         "created_at": {

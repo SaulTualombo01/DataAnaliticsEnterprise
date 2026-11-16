@@ -1,6 +1,7 @@
 package org.dataanaliticsent.TroncoComun.identidad.internal.presentacion;
 
 import java.io.IOException;
+import tools.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +30,25 @@ public class CuentasController {
     }
     public record EntregaHttp(InvitacionHttp invitation,String delivery_mode,String activation_token) {
         @Override public String toString() { return "EntregaHttp[protegido]"; }
+    }
+    public record Edicion(String display_name,JsonNode expected_revision,String reason) { }
+    public record DetalleHttp(CuentaHttp account,long revision) { static DetalleHttp from(DetalleCuenta c) { return new DetalleHttp(CuentaHttp.from(c.account()),c.revision()); } }
+    private static long revision(JsonNode v) { if(v==null || !v.isIntegralNumber() || !v.canConvertToLong() || v.longValue()<0) throw invalid(); return v.longValue(); }
+    @GetMapping("/api/v1/admin/users/{userId}")
+    public void detalleUsuario(@PathVariable String userId,HttpServletRequest req,HttpServletResponse res) throws IOException {
+        parametros(req,Set.of()); salida.datos(req,res,DetalleHttp.from(api.consultarUsuario(id(userId))));
+    }
+    @GetMapping("/api/v1/organizations/{organizationId}/users/{userId}")
+    public void detalleEmpleado(@PathVariable String organizationId,@PathVariable String userId,HttpServletRequest req,HttpServletResponse res) throws IOException {
+        parametros(req,Set.of()); salida.datos(req,res,DetalleHttp.from(api.consultarEmpleado(id(organizationId),id(userId))));
+    }
+    @PatchMapping("/api/v1/admin/users/{userId}")
+    public void editarUsuario(@PathVariable String userId,@RequestBody Edicion body,HttpServletRequest req,HttpServletResponse res) throws IOException {
+        parametros(req,Set.of()); salida.datos(req,res,DetalleHttp.from(api.editarUsuario(id(userId),body.display_name(),revision(body.expected_revision()),body.reason())));
+    }
+    @PatchMapping("/api/v1/organizations/{organizationId}/users/{userId}")
+    public void editarEmpleado(@PathVariable String organizationId,@PathVariable String userId,@RequestBody Edicion body,HttpServletRequest req,HttpServletResponse res) throws IOException {
+        parametros(req,Set.of()); salida.datos(req,res,DetalleHttp.from(api.editarEmpleado(id(organizationId),id(userId),body.display_name(),revision(body.expected_revision()),body.reason())));
     }
     private final CuentasApi api;
     private final ProblemasHttp salida;
