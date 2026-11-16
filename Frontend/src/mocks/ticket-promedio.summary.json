@@ -1,0 +1,20 @@
+{
+  "data": {
+    "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+    "generated_at": "2026-11-16T10:00:00Z",
+    "execution_state": "completed",
+    "dashboards": [
+      { "id": "c3a1f0d2-7b64-5e8a-a9d1-1b2c3d4e5f10", "name": "Resumen ejecutivo (sintético)", "widget_count": 1 }
+    ],
+    "latest_kpis": [
+      { "kpi_code": "TICKET_PROMEDIO", "value": 42.5, "unit": "USD", "status": "ok", "scope_complete": true, "evaluated_at": "2026-11-10T10:00:00Z" },
+      { "kpi_code": "TICKET_PROMEDIO", "value": 44.1, "unit": "USD", "status": "ok", "scope_complete": true, "evaluated_at": "2026-11-11T10:00:00Z" },
+      { "kpi_code": "TICKET_PROMEDIO", "value": 39.8, "unit": "USD", "status": "ok", "scope_complete": true, "evaluated_at": "2026-11-12T10:00:00Z" },
+      { "kpi_code": "TICKET_PROMEDIO", "value": 45.3, "unit": "USD", "status": "ok", "scope_complete": true, "evaluated_at": "2026-11-13T10:00:00Z" },
+      { "kpi_code": "TICKET_PROMEDIO", "value": 47.9, "unit": "USD", "status": "ok", "scope_complete": true, "evaluated_at": "2026-11-14T10:00:00Z" },
+      { "kpi_code": "TICKET_PROMEDIO", "value": 46.2, "unit": "USD", "status": "ok", "scope_complete": true, "evaluated_at": "2026-11-15T10:00:00Z" },
+      { "kpi_code": "TICKET_PROMEDIO", "value": 49.6, "unit": "USD", "status": "ok", "scope_complete": true, "evaluated_at": "2026-11-16T10:00:00Z" }
+    ]
+  },
+  "meta": { "request_id": "mock-dashboards_summary-normal" }
+}

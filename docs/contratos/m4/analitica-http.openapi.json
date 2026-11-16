@@ -3,14 +3,24 @@
   "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
   "info": {
     "title": "M4 Analítica — API HTTP",
-    "version": "0.1.0",
-    "description": "Contrato candidato para revisión (Sprint 0, P27). Los esquemas viven en analitica-http.schema.json. Ejemplos sintéticos en analitica.examples.json."
+    "version": "0.2.0",
+    "description": "Contrato candidato para revisión. Éxito: envoltura {data, meta} del tronco común. Errores: application/problem+json con code y request_id. Esquemas en analitica-http.schema.json; ejemplos sintéticos en analitica.examples.json."
   },
   "servers": [
-    { "url": "http://127.0.0.1:8080", "description": "Backend Spring Boot local" },
-    { "url": "http://127.0.0.1:8094", "description": "Mock M4 (tools/mock_m4.py)" }
+    {
+      "url": "http://127.0.0.1:8080",
+      "description": "Backend Spring Boot local"
+    },
+    {
+      "url": "http://127.0.0.1:8094",
+      "description": "Mock M4 (tools/mock_m4.py)"
+    }
   ],
-  "security": [{ "sessionCookie": [] }],
+  "security": [
+    {
+      "sessionCookie": []
+    }
+  ],
   "paths": {
     "/api/v1/analitica/ping": {
       "get": {
@@ -20,13 +30,16 @@
           "200": {
             "description": "Módulo operativo.",
             "content": {
-              "text/plain": {
-                "schema": { "type": "string" },
-                "example": "M4 Analitica operativo"
+              "application/json": {
+                "schema": {
+                  "$ref": "analitica-http.schema.json#/$defs/PingEnvelope"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthenticated" }
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          }
         }
       }
     },
@@ -34,51 +47,84 @@
       "post": {
         "operationId": "evaluarKpis",
         "summary": "Evaluar KPIs sobre un activo",
-        "description": "Solicita una lectura TC13 y calcula los KPIs. Revisar execution_state y scope.complete: un resultado parcial no es una evaluación final.",
-        "security": [{ "sessionCookie": [], "csrf": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/ProjectId" }],
+        "description": "Calcula los KPIs solicitados, incluido TICKET_PROMEDIO (categoría comercial). Revisar data.execution_state y data.scope.complete: un resultado parcial no es una evaluación final. data.read_id es null mientras TC13 no esté integrado.",
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "analitica-http.schema.json#/$defs/KpiEvaluateRequest" }
+              "schema": {
+                "$ref": "analitica-http.schema.json#/$defs/KpiEvaluateRequest"
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Evaluación registrada (completa, parcial o vacía).",
+            "description": "Evaluación (completa, parcial o vacía).",
             "content": {
               "application/json": {
-                "schema": { "$ref": "analitica-http.schema.json#/$defs/KpiEvaluateResponse" }
+                "schema": {
+                  "$ref": "analitica-http.schema.json#/$defs/KpiEvaluateEnvelope"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthenticated" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "404": { "$ref": "#/components/responses/NotFound" },
-          "422": { "$ref": "#/components/responses/ValidationError" },
-          "503": { "$ref": "#/components/responses/SourceUnavailable" }
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
         }
       }
     },
     "/api/v1/projects/{projectId}/analytics/dashboards/summary": {
       "get": {
         "operationId": "resumenDashboards",
-        "summary": "Resumen de dashboards y últimos KPIs del proyecto",
-        "parameters": [{ "$ref": "#/components/parameters/ProjectId" }],
+        "summary": "Resumen de dashboards y serie temporal de KPIs del proyecto",
+        "description": "data.latest_kpis es una serie temporal: varias entradas por kpi_code ordenadas por evaluated_at ascendente.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Resumen del proyecto.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "analitica-http.schema.json#/$defs/DashboardSummaryResponse" }
+                "schema": {
+                  "$ref": "analitica-http.schema.json#/$defs/DashboardSummaryEnvelope"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthenticated" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
         }
       }
     },
@@ -86,13 +132,24 @@
       "post": {
         "operationId": "generarReporte",
         "summary": "Solicitar la generación asíncrona de un reporte ejecutivo",
-        "security": [{ "sessionCookie": [], "csrf": [] }],
-        "parameters": [{ "$ref": "#/components/parameters/ProjectId" }],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectId"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "analitica-http.schema.json#/$defs/ReportGenerateRequest" }
+              "schema": {
+                "$ref": "analitica-http.schema.json#/$defs/ReportGenerateRequest"
+              }
             }
           }
         },
@@ -101,14 +158,21 @@
             "description": "Trabajo aceptado; el reporte se genera de forma asíncrona.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "analitica-http.schema.json#/$defs/ReportGenerateResponse" }
+                "schema": {
+                  "$ref": "analitica-http.schema.json#/$defs/ReportGenerateEnvelope"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthenticated" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "404": { "$ref": "#/components/responses/NotFound" },
-          "422": { "$ref": "#/components/responses/ValidationError" }
+          "400": {
+            "$ref": "#/components/responses/InvalidRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
         }
       }
     }
@@ -119,47 +183,50 @@
         "name": "projectId",
         "in": "path",
         "required": true,
-        "schema": { "type": "string", "format": "uuid" }
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
       }
     },
     "responses": {
       "Unauthenticated": {
-        "description": "Sin sesión válida.",
+        "description": "Sin sesión válida (code AUTHENTICATION_REQUIRED).",
         "content": {
-          "application/json": {
-            "schema": { "$ref": "analitica-http.schema.json#/$defs/ErrorResponse" }
+          "application/problem+json": {
+            "schema": {
+              "$ref": "analitica-http.schema.json#/$defs/Problem"
+            }
           }
         }
       },
       "Forbidden": {
-        "description": "Sin permiso de analítica en el proyecto.",
+        "description": "Sin permiso de analítica en el proyecto o CSRF inválido (code ACCESS_DENIED o CSRF_INVALID). No revela si el recurso existe.",
         "content": {
-          "application/json": {
-            "schema": { "$ref": "analitica-http.schema.json#/$defs/ErrorResponse" }
+          "application/problem+json": {
+            "schema": {
+              "$ref": "analitica-http.schema.json#/$defs/Problem"
+            }
           }
         }
       },
-      "NotFound": {
-        "description": "Proyecto, activo o dashboard inexistente o no visible.",
+      "InvalidRequest": {
+        "description": "Petición inválida (code INVALID_REQUEST).",
         "content": {
-          "application/json": {
-            "schema": { "$ref": "analitica-http.schema.json#/$defs/ErrorResponse" }
+          "application/problem+json": {
+            "schema": {
+              "$ref": "analitica-http.schema.json#/$defs/Problem"
+            }
           }
         }
       },
-      "ValidationError": {
-        "description": "Petición inválida.",
+      "Unavailable": {
+        "description": "Analítica o su fuente de datos no disponible (code ANALYTICS_UNAVAILABLE).",
         "content": {
-          "application/json": {
-            "schema": { "$ref": "analitica-http.schema.json#/$defs/ErrorResponse" }
-          }
-        }
-      },
-      "SourceUnavailable": {
-        "description": "Fuente o lectura TC13 no disponible.",
-        "content": {
-          "application/json": {
-            "schema": { "$ref": "analitica-http.schema.json#/$defs/ErrorResponse" }
+          "application/problem+json": {
+            "schema": {
+              "$ref": "analitica-http.schema.json#/$defs/Problem"
+            }
           }
         }
       }

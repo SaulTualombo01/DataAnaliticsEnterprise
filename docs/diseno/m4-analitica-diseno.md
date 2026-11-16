@@ -24,6 +24,7 @@ Los umbrales son valores iniciales propuestos y deben ser confirmados por el neg
 | `COMP_ACTIVO` | Completitud | Promedio ponderado de `COMP_COLUMNA` de las columnas obligatorias | `Σ(comp_i · w_i) / Σ w_i` | ratio 0–1 | ≥ 0.95 |
 | `PERF_LATENCIA_LECTURA` | Rendimiento | Tiempo total de la lectura TC13 más el cálculo del KPI | `t_fin - t_inicio` | ms | p95 ≤ 5000 |
 | `PERF_THROUGHPUT` | Rendimiento | Filas procesadas por segundo | `filas_evaluadas / duracion_s` | filas/s | informativo |
+| `TICKET_PROMEDIO` | Comercial | Ingreso medio por pedido en la ventana evaluada | `Σ total_pedido / count(pedidos)` | moneda | informativo |
 
 Reglas comunes:
 
@@ -110,19 +111,19 @@ Notas del modelo:
 ```mermaid
 flowchart TD
     A([Cliente: POST /projects/{projectId}/analytics/kpis/evaluate]) --> B{Sesión válida?}
-    B -- No --> B1[401 unauthenticated]
+    B -- No --> B1[401 AUTHENTICATION_REQUIRED]
     B -- Sí --> C{Permiso de analítica en el proyecto?}
-    C -- No --> C1[403 forbidden]
+    C -- No --> C1[403 ACCESS_DENIED]
     C -- Sí --> D[Validar solicitud contra JSON Schema]
-    D -- Inválida --> D1[422 validation_error]
+    D -- Inválida --> D1[400 INVALID_REQUEST]
     D -- Válida --> E[Resolver asset_id y metadatos con interfaz pública de M1]
     E --> F{Activo existe y autorizado?}
-    F -- No --> F1[404 not_found o 403]
+    F -- No --> F1[403 ACCESS_DENIED]
     F -- Sí --> G[Cargar kpi_definitions activas solicitadas]
     G --> H[Solicitar lectura TC13: POST /projects/{projectId}/reads]
     H --> I{Estado de la lectura}
-    I -- unavailable / source_disabled --> I1[503 source_unavailable; registrar intento]
-    I -- denied --> I2[403 forbidden]
+    I -- unavailable / source_disabled --> I1[503 ANALYTICS_UNAVAILABLE; registrar intento]
+    I -- denied --> I2[403 ACCESS_DENIED]
     I -- empty --> J0[Marcar KPIs como not_evaluable]
     I -- partial --> J1[Calcular KPIs con scope_complete = false]
     I -- normal --> J2[Calcular KPIs con scope_complete = true]
@@ -141,7 +142,7 @@ flowchart TD
     A([Cliente: POST /projects/{projectId}/analytics/reports/generate]) --> B{Sesión y permiso?}
     B -- No --> B1[401 / 403]
     B -- Sí --> C[Validar formato y dashboard_id]
-    C -- Inválido --> C1[422 validation_error]
+    C -- Inválido --> C1[400 INVALID_REQUEST]
     C -- Válido --> D[Crear report_jobs: status = queued]
     D --> E([202 Accepted con job_id])
     D --> F[Worker interno toma el job: status = running]

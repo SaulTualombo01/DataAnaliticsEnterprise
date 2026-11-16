@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:tic:m4:analitica-http:0.1.0",
-  "title": "M4 Analítica — esquemas HTTP (candidato 0.1.0)",
-  "description": "Esquemas de petición y respuesta de M4. Contrato candidato para revisión; datos de ejemplo sintéticos.",
+  "$id": "urn:tic:m4:analitica-http:0.2.0",
+  "title": "M4 Analítica — esquemas HTTP (candidato 0.2.0)",
+  "description": "Esquemas de petición y respuesta de M4. Las respuestas de éxito usan la envoltura {data, meta} del tronco común y los errores application/problem+json. Datos de ejemplo sintéticos.",
   "$defs": {
     "Uuid": {
       "type": "string",
@@ -22,31 +22,58 @@
         "COMP_COLUMNA",
         "COMP_ACTIVO",
         "PERF_LATENCIA_LECTURA",
-        "PERF_THROUGHPUT"
+        "PERF_THROUGHPUT",
+        "TICKET_PROMEDIO"
       ]
     },
     "KpiCategory": {
       "type": "string",
-      "enum": ["calidad", "volumen", "completitud", "rendimiento"]
+      "enum": [
+        "calidad",
+        "volumen",
+        "completitud",
+        "rendimiento",
+        "comercial"
+      ]
     },
     "KpiStatus": {
       "type": "string",
-      "enum": ["ok", "warning", "critical", "not_evaluable"]
+      "enum": [
+        "ok",
+        "warning",
+        "critical",
+        "not_evaluable"
+      ]
     },
     "ExecutionState": {
       "type": "string",
       "description": "completed: lectura completa; partial: lectura incompleta, no es evaluación final; empty: sin filas.",
-      "enum": ["completed", "partial", "empty"]
+      "enum": [
+        "completed",
+        "partial",
+        "empty"
+      ]
     },
     "Scope": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["complete", "rows_evaluated"],
+      "required": [
+        "complete",
+        "rows_evaluated"
+      ],
       "properties": {
-        "complete": { "type": "boolean" },
-        "rows_evaluated": { "type": "integer", "minimum": 0 },
+        "complete": {
+          "type": "boolean"
+        },
+        "rows_evaluated": {
+          "type": "integer",
+          "minimum": 0
+        },
         "reason": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Motivo cuando complete es false."
         }
       }
@@ -54,40 +81,85 @@
     "TimeWindow": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["from", "to"],
+      "required": [
+        "from",
+        "to"
+      ],
       "properties": {
-        "from": { "$ref": "#/$defs/Timestamp" },
-        "to": { "$ref": "#/$defs/Timestamp" }
+        "from": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "to": {
+          "$ref": "#/$defs/Timestamp"
+        }
       }
     },
     "KpiEvaluateRequest": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["asset_id", "kpi_codes"],
+      "required": [
+        "asset_id",
+        "kpi_codes"
+      ],
       "properties": {
-        "asset_id": { "$ref": "#/$defs/Uuid" },
+        "asset_id": {
+          "$ref": "#/$defs/Uuid"
+        },
         "kpi_codes": {
           "type": "array",
           "minItems": 1,
-          "maxItems": 8,
+          "maxItems": 9,
           "uniqueItems": true,
-          "items": { "$ref": "#/$defs/KpiCode" }
+          "items": {
+            "$ref": "#/$defs/KpiCode"
+          }
         },
-        "window": { "$ref": "#/$defs/TimeWindow" }
+        "window": {
+          "$ref": "#/$defs/TimeWindow"
+        }
       }
     },
     "KpiResult": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kpi_code", "category", "value", "unit", "status"],
+      "required": [
+        "kpi_code",
+        "category",
+        "value",
+        "unit",
+        "status"
+      ],
       "properties": {
-        "kpi_code": { "$ref": "#/$defs/KpiCode" },
-        "category": { "$ref": "#/$defs/KpiCategory" },
-        "value": { "type": ["number", "null"] },
-        "unit": { "type": "string" },
-        "status": { "$ref": "#/$defs/KpiStatus" },
-        "threshold_warning": { "type": ["number", "null"] },
-        "threshold_critical": { "type": ["number", "null"] }
+        "kpi_code": {
+          "$ref": "#/$defs/KpiCode"
+        },
+        "category": {
+          "$ref": "#/$defs/KpiCategory"
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/KpiStatus"
+        },
+        "threshold_warning": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "threshold_critical": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
       }
     },
     "KpiEvaluateResponse": {
@@ -103,120 +175,328 @@
         "results"
       ],
       "properties": {
-        "evaluation_id": { "$ref": "#/$defs/Uuid" },
-        "read_id": {
-          "$ref": "#/$defs/Uuid",
-          "description": "Recibo de la lectura TC13 de la que provienen los valores."
+        "evaluation_id": {
+          "$ref": "#/$defs/Uuid"
         },
-        "asset_id": { "$ref": "#/$defs/Uuid" },
-        "execution_state": { "$ref": "#/$defs/ExecutionState" },
-        "scope": { "$ref": "#/$defs/Scope" },
-        "evaluated_at": { "$ref": "#/$defs/Timestamp" },
+        "read_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid",
+          "description": "Recibo de la lectura TC13 de la que provienen los valores. null mientras TC13 no esté integrado y los valores sean sintéticos."
+        },
+        "asset_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "execution_state": {
+          "$ref": "#/$defs/ExecutionState"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "evaluated_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
         "results": {
           "type": "array",
-          "items": { "$ref": "#/$defs/KpiResult" }
+          "items": {
+            "$ref": "#/$defs/KpiResult"
+          }
         }
       }
     },
     "DashboardRef": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "name", "widget_count"],
+      "required": [
+        "id",
+        "name",
+        "widget_count"
+      ],
       "properties": {
-        "id": { "$ref": "#/$defs/Uuid" },
-        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
-        "widget_count": { "type": "integer", "minimum": 0 }
+        "id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "widget_count": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "LatestKpi": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kpi_code", "value", "unit", "status", "scope_complete", "evaluated_at"],
+      "required": [
+        "kpi_code",
+        "value",
+        "unit",
+        "status",
+        "scope_complete",
+        "evaluated_at"
+      ],
       "properties": {
-        "kpi_code": { "$ref": "#/$defs/KpiCode" },
-        "value": { "type": ["number", "null"] },
-        "unit": { "type": "string" },
-        "status": { "$ref": "#/$defs/KpiStatus" },
-        "scope_complete": { "type": "boolean" },
-        "evaluated_at": { "$ref": "#/$defs/Timestamp" }
+        "kpi_code": {
+          "$ref": "#/$defs/KpiCode"
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/KpiStatus"
+        },
+        "scope_complete": {
+          "type": "boolean"
+        },
+        "evaluated_at": {
+          "$ref": "#/$defs/Timestamp"
+        }
       }
     },
     "DashboardSummaryResponse": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["project_id", "generated_at", "execution_state", "dashboards", "latest_kpis"],
+      "required": [
+        "project_id",
+        "generated_at",
+        "execution_state",
+        "dashboards",
+        "latest_kpis"
+      ],
       "properties": {
-        "project_id": { "$ref": "#/$defs/Uuid" },
-        "generated_at": { "$ref": "#/$defs/Timestamp" },
-        "execution_state": { "$ref": "#/$defs/ExecutionState" },
+        "project_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "generated_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "execution_state": {
+          "$ref": "#/$defs/ExecutionState"
+        },
         "dashboards": {
           "type": "array",
-          "items": { "$ref": "#/$defs/DashboardRef" }
+          "items": {
+            "$ref": "#/$defs/DashboardRef"
+          }
         },
         "latest_kpis": {
           "type": "array",
-          "items": { "$ref": "#/$defs/LatestKpi" }
+          "items": {
+            "$ref": "#/$defs/LatestKpi"
+          },
+          "description": "Serie temporal de evaluaciones recientes. Puede contener varias entradas por kpi_code, ordenadas por evaluated_at ascendente; la última de cada código es su valor vigente."
         }
       }
     },
     "ReportFormat": {
       "type": "string",
-      "enum": ["pdf", "xlsx", "csv"]
+      "enum": [
+        "pdf",
+        "xlsx",
+        "csv"
+      ]
     },
     "ReportGenerateRequest": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["dashboard_id", "format"],
+      "required": [
+        "dashboard_id",
+        "format"
+      ],
       "properties": {
-        "dashboard_id": { "$ref": "#/$defs/Uuid" },
-        "format": { "$ref": "#/$defs/ReportFormat" },
-        "title": { "type": "string", "minLength": 1, "maxLength": 160 }
+        "dashboard_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "format": {
+          "$ref": "#/$defs/ReportFormat"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        }
       }
     },
     "ReportJobStatus": {
       "type": "string",
-      "enum": ["queued", "running", "completed", "failed"]
+      "enum": [
+        "queued",
+        "running",
+        "completed",
+        "failed"
+      ]
     },
     "ReportGenerateResponse": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["job_id", "status", "format", "requested_at"],
+      "required": [
+        "job_id",
+        "status",
+        "format",
+        "requested_at"
+      ],
       "properties": {
-        "job_id": { "$ref": "#/$defs/Uuid" },
-        "status": { "$ref": "#/$defs/ReportJobStatus" },
-        "format": { "$ref": "#/$defs/ReportFormat" },
-        "requested_at": { "$ref": "#/$defs/Timestamp" },
+        "job_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "status": {
+          "$ref": "#/$defs/ReportJobStatus"
+        },
+        "format": {
+          "$ref": "#/$defs/ReportFormat"
+        },
+        "requested_at": {
+          "$ref": "#/$defs/Timestamp"
+        },
         "includes_partial_data": {
           "type": "boolean",
           "description": "true si el reporte incluirá evaluaciones parciales."
         }
       }
     },
-    "ErrorCode": {
-      "type": "string",
-      "enum": [
-        "unauthenticated",
-        "forbidden",
-        "not_found",
-        "validation_error",
-        "source_unavailable",
-        "internal_error"
-      ]
-    },
-    "ErrorResponse": {
+    "Meta": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["error"],
+      "required": [
+        "request_id"
+      ],
       "properties": {
-        "error": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["code", "message"],
-          "properties": {
-            "code": { "$ref": "#/$defs/ErrorCode" },
-            "message": { "type": "string" },
-            "request_id": { "type": "string" }
-          }
+        "request_id": {
+          "type": "string"
+        }
+      }
+    },
+    "PingResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "PingEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/PingResponse"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      }
+    },
+    "KpiEvaluateEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/KpiEvaluateResponse"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      }
+    },
+    "DashboardSummaryEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/DashboardSummaryResponse"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      }
+    },
+    "ReportGenerateEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ReportGenerateResponse"
+        },
+        "meta": {
+          "$ref": "#/$defs/Meta"
+        }
+      }
+    },
+    "ProblemCode": {
+      "type": "string",
+      "enum": [
+        "AUTHENTICATION_REQUIRED",
+        "ACCESS_DENIED",
+        "CSRF_INVALID",
+        "INVALID_REQUEST",
+        "ANALYTICS_UNAVAILABLE"
+      ]
+    },
+    "Problem": {
+      "type": "object",
+      "description": "Formato de error del tronco común (application/problem+json).",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "title",
+        "status",
+        "detail",
+        "instance",
+        "code",
+        "request_id"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "instance": {
+          "type": "string"
+        },
+        "code": {
+          "$ref": "#/$defs/ProblemCode"
+        },
+        "request_id": {
+          "type": "string"
         }
       }
     }

@@ -1,164 +1,448 @@
 {
   "_meta": {
     "descripcion": "Ejemplos SINTÉTICOS para M4. No representan datos empresariales reales. Los identificadores son ficticios.",
-    "contrato": "urn:tic:m4:analitica-http:0.1.0",
-    "estructura": "<operacion>.<escenario> = { status, content_type?, body }"
+    "contrato": "urn:tic:m4:analitica-http:0.2.0",
+    "estructura": "<operacion>.<escenario> = { status, content_type?, body }. Éxito: body = {data, meta}. Error: body = problem+json; el mock rellena instance con la ruta."
   },
   "ping": {
     "normal": {
       "status": 200,
-      "content_type": "text/plain",
-      "body": "M4 Analitica operativo"
+      "body": {
+        "data": {
+          "message": "M4 Analitica operativo"
+        },
+        "meta": {
+          "request_id": "mock-ping-normal"
+        }
+      }
     },
     "denied": {
       "status": 401,
-      "body": { "error": { "code": "unauthenticated", "message": "Sesión requerida.", "request_id": "mock-ping-401" } }
+      "body": {
+        "type": "about:blank",
+        "title": "Autenticación requerida",
+        "status": 401,
+        "detail": "Inicia sesión para continuar",
+        "instance": "",
+        "code": "AUTHENTICATION_REQUIRED",
+        "request_id": "mock-ping-denied"
+      },
+      "content_type": "application/problem+json"
     }
   },
   "kpis_evaluate": {
     "normal": {
       "status": 200,
       "body": {
-        "evaluation_id": "9b1d6c1e-3f0a-5a52-8b6e-0c1f2a3b4c01",
-        "read_id": "0a7e2b94-5d3c-5f10-9a21-7e8d9c0b1a02",
-        "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
-        "execution_state": "completed",
-        "scope": { "complete": true, "rows_evaluated": 3, "reason": null },
-        "evaluated_at": "2026-11-12T10:00:00Z",
-        "results": [
-          { "kpi_code": "DQ_VALIDEZ", "category": "calidad", "value": 1.0, "unit": "ratio", "status": "ok", "threshold_warning": 0.98, "threshold_critical": 0.9 },
-          { "kpi_code": "VOL_FILAS", "category": "volumen", "value": 3, "unit": "filas", "status": "ok", "threshold_warning": null, "threshold_critical": null },
-          { "kpi_code": "COMP_ACTIVO", "category": "completitud", "value": 0.97, "unit": "ratio", "status": "ok", "threshold_warning": 0.95, "threshold_critical": 0.85 },
-          { "kpi_code": "PERF_LATENCIA_LECTURA", "category": "rendimiento", "value": 420, "unit": "ms", "status": "ok", "threshold_warning": 5000, "threshold_critical": 10000 }
-        ]
+        "data": {
+          "evaluation_id": "9b1d6c1e-3f0a-5a52-8b6e-0c1f2a3b4c01",
+          "read_id": "0a7e2b94-5d3c-5f10-9a21-7e8d9c0b1a02",
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "execution_state": "completed",
+          "scope": {
+            "complete": true,
+            "rows_evaluated": 3,
+            "reason": null
+          },
+          "evaluated_at": "2026-11-12T10:00:00Z",
+          "results": [
+            {
+              "kpi_code": "DQ_VALIDEZ",
+              "category": "calidad",
+              "value": 1.0,
+              "unit": "ratio",
+              "status": "ok",
+              "threshold_warning": 0.98,
+              "threshold_critical": 0.9
+            },
+            {
+              "kpi_code": "VOL_FILAS",
+              "category": "volumen",
+              "value": 3,
+              "unit": "filas",
+              "status": "ok",
+              "threshold_warning": null,
+              "threshold_critical": null
+            },
+            {
+              "kpi_code": "COMP_ACTIVO",
+              "category": "completitud",
+              "value": 0.97,
+              "unit": "ratio",
+              "status": "ok",
+              "threshold_warning": 0.95,
+              "threshold_critical": 0.85
+            },
+            {
+              "kpi_code": "PERF_LATENCIA_LECTURA",
+              "category": "rendimiento",
+              "value": 420,
+              "unit": "ms",
+              "status": "ok",
+              "threshold_warning": 5000,
+              "threshold_critical": 10000
+            },
+            {
+              "kpi_code": "TICKET_PROMEDIO",
+              "category": "comercial",
+              "value": 45.06,
+              "unit": "USD",
+              "status": "ok",
+              "threshold_warning": null,
+              "threshold_critical": null
+            }
+          ]
+        },
+        "meta": {
+          "request_id": "mock-kpis_evaluate-normal"
+        }
       }
     },
     "empty": {
       "status": 200,
       "body": {
-        "evaluation_id": "9b1d6c1e-3f0a-5a52-8b6e-0c1f2a3b4c03",
-        "read_id": "0a7e2b94-5d3c-5f10-9a21-7e8d9c0b1a04",
-        "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
-        "execution_state": "empty",
-        "scope": { "complete": true, "rows_evaluated": 0, "reason": null },
-        "evaluated_at": "2026-11-12T10:05:00Z",
-        "results": [
-          { "kpi_code": "DQ_VALIDEZ", "category": "calidad", "value": null, "unit": "ratio", "status": "not_evaluable", "threshold_warning": 0.98, "threshold_critical": 0.9 },
-          { "kpi_code": "VOL_FILAS", "category": "volumen", "value": 0, "unit": "filas", "status": "not_evaluable", "threshold_warning": null, "threshold_critical": null }
-        ]
+        "data": {
+          "evaluation_id": "9b1d6c1e-3f0a-5a52-8b6e-0c1f2a3b4c03",
+          "read_id": "0a7e2b94-5d3c-5f10-9a21-7e8d9c0b1a04",
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "execution_state": "empty",
+          "scope": {
+            "complete": true,
+            "rows_evaluated": 0,
+            "reason": null
+          },
+          "evaluated_at": "2026-11-12T10:05:00Z",
+          "results": [
+            {
+              "kpi_code": "DQ_VALIDEZ",
+              "category": "calidad",
+              "value": null,
+              "unit": "ratio",
+              "status": "not_evaluable",
+              "threshold_warning": 0.98,
+              "threshold_critical": 0.9
+            },
+            {
+              "kpi_code": "VOL_FILAS",
+              "category": "volumen",
+              "value": 0,
+              "unit": "filas",
+              "status": "not_evaluable",
+              "threshold_warning": null,
+              "threshold_critical": null
+            }
+          ]
+        },
+        "meta": {
+          "request_id": "mock-kpis_evaluate-empty"
+        }
       }
     },
     "partial": {
       "status": 200,
       "body": {
-        "evaluation_id": "9b1d6c1e-3f0a-5a52-8b6e-0c1f2a3b4c05",
-        "read_id": "0a7e2b94-5d3c-5f10-9a21-7e8d9c0b1a06",
-        "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
-        "execution_state": "partial",
-        "scope": { "complete": false, "rows_evaluated": 2, "reason": "Lectura limitada por tamaño máximo; no es evaluación final." },
-        "evaluated_at": "2026-11-12T10:10:00Z",
-        "results": [
-          { "kpi_code": "DQ_VALIDEZ", "category": "calidad", "value": 0.96, "unit": "ratio", "status": "warning", "threshold_warning": 0.98, "threshold_critical": 0.9 },
-          { "kpi_code": "COMP_ACTIVO", "category": "completitud", "value": 0.93, "unit": "ratio", "status": "warning", "threshold_warning": 0.95, "threshold_critical": 0.85 }
-        ]
+        "data": {
+          "evaluation_id": "9b1d6c1e-3f0a-5a52-8b6e-0c1f2a3b4c05",
+          "read_id": "0a7e2b94-5d3c-5f10-9a21-7e8d9c0b1a06",
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "execution_state": "partial",
+          "scope": {
+            "complete": false,
+            "rows_evaluated": 2,
+            "reason": "Lectura limitada por tamaño máximo; no es evaluación final."
+          },
+          "evaluated_at": "2026-11-12T10:10:00Z",
+          "results": [
+            {
+              "kpi_code": "DQ_VALIDEZ",
+              "category": "calidad",
+              "value": 0.96,
+              "unit": "ratio",
+              "status": "warning",
+              "threshold_warning": 0.98,
+              "threshold_critical": 0.9
+            },
+            {
+              "kpi_code": "COMP_ACTIVO",
+              "category": "completitud",
+              "value": 0.93,
+              "unit": "ratio",
+              "status": "warning",
+              "threshold_warning": 0.95,
+              "threshold_critical": 0.85
+            }
+          ]
+        },
+        "meta": {
+          "request_id": "mock-kpis_evaluate-partial"
+        }
       }
     },
     "denied": {
       "status": 403,
-      "body": { "error": { "code": "forbidden", "message": "Sin permiso de analítica en este proyecto.", "request_id": "mock-kpi-403" } }
+      "body": {
+        "type": "about:blank",
+        "title": "Acceso denegado",
+        "status": 403,
+        "detail": "La operación no está autorizada",
+        "instance": "",
+        "code": "ACCESS_DENIED",
+        "request_id": "mock-kpis_evaluate-denied"
+      },
+      "content_type": "application/problem+json"
     },
     "error": {
       "status": 503,
-      "body": { "error": { "code": "source_unavailable", "message": "La lectura TC13 no está disponible.", "request_id": "mock-kpi-503" } }
+      "body": {
+        "type": "about:blank",
+        "title": "Servicio no disponible",
+        "status": 503,
+        "detail": "No se pudo completar la operación de analítica",
+        "instance": "",
+        "code": "ANALYTICS_UNAVAILABLE",
+        "request_id": "mock-kpis_evaluate-error"
+      },
+      "content_type": "application/problem+json"
     }
   },
   "dashboards_summary": {
     "normal": {
       "status": 200,
       "body": {
-        "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
-        "generated_at": "2026-11-12T10:15:00Z",
-        "execution_state": "completed",
-        "dashboards": [
-          { "id": "c3a1f0d2-7b64-5e8a-a9d1-1b2c3d4e5f10", "name": "Resumen ejecutivo (sintético)", "widget_count": 4 }
-        ],
-        "latest_kpis": [
-          { "kpi_code": "DQ_VALIDEZ", "value": 1.0, "unit": "ratio", "status": "ok", "scope_complete": true, "evaluated_at": "2026-11-12T10:00:00Z" },
-          { "kpi_code": "VOL_FILAS", "value": 3, "unit": "filas", "status": "ok", "scope_complete": true, "evaluated_at": "2026-11-12T10:00:00Z" }
-        ]
+        "data": {
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "generated_at": "2026-11-12T10:15:00Z",
+          "execution_state": "completed",
+          "dashboards": [
+            {
+              "id": "c3a1f0d2-7b64-5e8a-a9d1-1b2c3d4e5f10",
+              "name": "Resumen ejecutivo (sintético)",
+              "widget_count": 4
+            }
+          ],
+          "latest_kpis": [
+            {
+              "kpi_code": "DQ_VALIDEZ",
+              "value": 1.0,
+              "unit": "ratio",
+              "status": "ok",
+              "scope_complete": true,
+              "evaluated_at": "2026-11-12T10:00:00Z"
+            },
+            {
+              "kpi_code": "VOL_FILAS",
+              "value": 3,
+              "unit": "filas",
+              "status": "ok",
+              "scope_complete": true,
+              "evaluated_at": "2026-11-12T10:00:00Z"
+            },
+            {
+              "kpi_code": "TICKET_PROMEDIO",
+              "value": 42.5,
+              "unit": "USD",
+              "status": "ok",
+              "scope_complete": true,
+              "evaluated_at": "2026-11-10T10:00:00Z"
+            },
+            {
+              "kpi_code": "TICKET_PROMEDIO",
+              "value": 44.1,
+              "unit": "USD",
+              "status": "ok",
+              "scope_complete": true,
+              "evaluated_at": "2026-11-11T10:00:00Z"
+            },
+            {
+              "kpi_code": "TICKET_PROMEDIO",
+              "value": 39.8,
+              "unit": "USD",
+              "status": "ok",
+              "scope_complete": true,
+              "evaluated_at": "2026-11-12T10:00:00Z"
+            },
+            {
+              "kpi_code": "TICKET_PROMEDIO",
+              "value": 45.3,
+              "unit": "USD",
+              "status": "ok",
+              "scope_complete": true,
+              "evaluated_at": "2026-11-13T10:00:00Z"
+            },
+            {
+              "kpi_code": "TICKET_PROMEDIO",
+              "value": 47.9,
+              "unit": "USD",
+              "status": "ok",
+              "scope_complete": true,
+              "evaluated_at": "2026-11-14T10:00:00Z"
+            },
+            {
+              "kpi_code": "TICKET_PROMEDIO",
+              "value": 46.2,
+              "unit": "USD",
+              "status": "ok",
+              "scope_complete": true,
+              "evaluated_at": "2026-11-15T10:00:00Z"
+            },
+            {
+              "kpi_code": "TICKET_PROMEDIO",
+              "value": 49.6,
+              "unit": "USD",
+              "status": "ok",
+              "scope_complete": true,
+              "evaluated_at": "2026-11-16T10:00:00Z"
+            }
+          ]
+        },
+        "meta": {
+          "request_id": "mock-dashboards_summary-normal"
+        }
       }
     },
     "empty": {
       "status": 200,
       "body": {
-        "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
-        "generated_at": "2026-11-12T10:15:00Z",
-        "execution_state": "empty",
-        "dashboards": [],
-        "latest_kpis": []
+        "data": {
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "generated_at": "2026-11-12T10:15:00Z",
+          "execution_state": "empty",
+          "dashboards": [],
+          "latest_kpis": []
+        },
+        "meta": {
+          "request_id": "mock-dashboards_summary-empty"
+        }
       }
     },
     "partial": {
       "status": 200,
       "body": {
-        "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
-        "generated_at": "2026-11-12T10:15:00Z",
-        "execution_state": "partial",
-        "dashboards": [
-          { "id": "c3a1f0d2-7b64-5e8a-a9d1-1b2c3d4e5f10", "name": "Resumen ejecutivo (sintético)", "widget_count": 4 }
-        ],
-        "latest_kpis": [
-          { "kpi_code": "DQ_VALIDEZ", "value": 0.96, "unit": "ratio", "status": "warning", "scope_complete": false, "evaluated_at": "2026-11-12T10:10:00Z" }
-        ]
+        "data": {
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "generated_at": "2026-11-12T10:15:00Z",
+          "execution_state": "partial",
+          "dashboards": [
+            {
+              "id": "c3a1f0d2-7b64-5e8a-a9d1-1b2c3d4e5f10",
+              "name": "Resumen ejecutivo (sintético)",
+              "widget_count": 4
+            }
+          ],
+          "latest_kpis": [
+            {
+              "kpi_code": "DQ_VALIDEZ",
+              "value": 0.96,
+              "unit": "ratio",
+              "status": "warning",
+              "scope_complete": false,
+              "evaluated_at": "2026-11-12T10:10:00Z"
+            }
+          ]
+        },
+        "meta": {
+          "request_id": "mock-dashboards_summary-partial"
+        }
       }
     },
     "denied": {
       "status": 403,
-      "body": { "error": { "code": "forbidden", "message": "Sin permiso de analítica en este proyecto.", "request_id": "mock-dash-403" } }
+      "body": {
+        "type": "about:blank",
+        "title": "Acceso denegado",
+        "status": 403,
+        "detail": "La operación no está autorizada",
+        "instance": "",
+        "code": "ACCESS_DENIED",
+        "request_id": "mock-dashboards_summary-denied"
+      },
+      "content_type": "application/problem+json"
     },
     "error": {
       "status": 503,
-      "body": { "error": { "code": "source_unavailable", "message": "Servicio de analítica no disponible.", "request_id": "mock-dash-503" } }
+      "body": {
+        "type": "about:blank",
+        "title": "Servicio no disponible",
+        "status": 503,
+        "detail": "No se pudo completar la operación de analítica",
+        "instance": "",
+        "code": "ANALYTICS_UNAVAILABLE",
+        "request_id": "mock-dashboards_summary-error"
+      },
+      "content_type": "application/problem+json"
     }
   },
   "reports_generate": {
     "normal": {
       "status": 202,
       "body": {
-        "job_id": "d4b2e1a3-8c75-5f9b-b0e2-2c3d4e5f6a20",
-        "status": "queued",
-        "format": "pdf",
-        "requested_at": "2026-11-12T10:20:00Z",
-        "includes_partial_data": false
+        "data": {
+          "job_id": "d4b2e1a3-8c75-5f9b-b0e2-2c3d4e5f6a20",
+          "status": "queued",
+          "format": "pdf",
+          "requested_at": "2026-11-12T10:20:00Z",
+          "includes_partial_data": false
+        },
+        "meta": {
+          "request_id": "mock-reports_generate-normal"
+        }
       }
     },
     "empty": {
       "status": 202,
       "body": {
-        "job_id": "d4b2e1a3-8c75-5f9b-b0e2-2c3d4e5f6a21",
-        "status": "queued",
-        "format": "pdf",
-        "requested_at": "2026-11-12T10:21:00Z",
-        "includes_partial_data": false
+        "data": {
+          "job_id": "d4b2e1a3-8c75-5f9b-b0e2-2c3d4e5f6a21",
+          "status": "queued",
+          "format": "pdf",
+          "requested_at": "2026-11-12T10:21:00Z",
+          "includes_partial_data": false
+        },
+        "meta": {
+          "request_id": "mock-reports_generate-empty"
+        }
       }
     },
     "partial": {
       "status": 202,
       "body": {
-        "job_id": "d4b2e1a3-8c75-5f9b-b0e2-2c3d4e5f6a22",
-        "status": "queued",
-        "format": "xlsx",
-        "requested_at": "2026-11-12T10:22:00Z",
-        "includes_partial_data": true
+        "data": {
+          "job_id": "d4b2e1a3-8c75-5f9b-b0e2-2c3d4e5f6a22",
+          "status": "queued",
+          "format": "xlsx",
+          "requested_at": "2026-11-12T10:22:00Z",
+          "includes_partial_data": true
+        },
+        "meta": {
+          "request_id": "mock-reports_generate-partial"
+        }
       }
     },
     "denied": {
       "status": 403,
-      "body": { "error": { "code": "forbidden", "message": "Sin permiso para generar reportes en este proyecto.", "request_id": "mock-rep-403" } }
+      "body": {
+        "type": "about:blank",
+        "title": "Acceso denegado",
+        "status": 403,
+        "detail": "La operación no está autorizada",
+        "instance": "",
+        "code": "ACCESS_DENIED",
+        "request_id": "mock-reports_generate-denied"
+      },
+      "content_type": "application/problem+json"
     },
     "error": {
-      "status": 422,
-      "body": { "error": { "code": "validation_error", "message": "El formato solicitado no es válido.", "request_id": "mock-rep-422" } }
+      "status": 400,
+      "body": {
+        "type": "about:blank",
+        "title": "Solicitud inválida",
+        "status": 400,
+        "detail": "Revisa los campos de la solicitud de analítica",
+        "instance": "",
+        "code": "INVALID_REQUEST",
+        "request_id": "mock-reports_generate-error"
+      },
+      "content_type": "application/problem+json"
     }
   }
 }
