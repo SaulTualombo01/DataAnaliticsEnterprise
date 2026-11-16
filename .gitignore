@@ -1,2 +1,5 @@
 # IntelliJ IDEA
 .idea/
+
+# Graphify (grafo de conocimiento generado; se regenera con: graphify update .)
+graphify-out/

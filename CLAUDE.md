@@ -39,14 +39,14 @@ Eres un Arquitecto de Software, Ingeniero de Datos y Experto en Spring Boot / Re
 Si modificas un archivo, debes dejarlo mejor de lo que lo encontraste, respetando el estándar del proyecto:
 
 1. Elimina código muerto: Imports sin uso, métodos obsoletos, comentarios de código antiguo.
-2. Código limpio: Redactar código Java limpio y tipado, preparando el terreno para la futura integración de linters en el pom.xml.
+2. Código limpio: Redactar código Java limpio y tipado. Activo y obligatorio mediante Spotless para el paquete `org.dataanaliticsent.analitica`.
 3. Refactorización Local: No modifiques lógica estructural fuera del alcance de la tarea sin proponerlo primero.
 
 ## 6. QA Y PRUEBAS (OBLIGATORIO)
 
 Antes de dar por terminada una tarea o generar el código final, debes proponer y (si estás en un entorno de ejecución) validar los siguientes pasos:
 
-1. Calidad Estática: Redactar código Java limpio y tipado, preparando el terreno para la futura integración de linters en el pom.xml.
+1. Calidad Estática: Redactar código Java limpio y tipado. Activo y obligatorio mediante Spotless para el paquete `org.dataanaliticsent.analitica`.
 2. Pruebas Unitarias (JUnit 5 + Mockito): La lógica matemática de los KPIs y agregaciones DEBE estar probada aisladamente, simulando las entradas del dataset.
 3. Optimización de Contexto: Sugiere la actualización de índices mediante Graphify (cuando aplique) para mantener las dependencias limpias.
 
@@ -63,8 +63,6 @@ Bajo ninguna circunstancia tienes permitido generar comandos directos para ejecu
 
 ## 9. DIRECTIVAS DE DESARROLLO FRONTEND (REACT + VITE)
 
-> Nota: Estas reglas aplicarán únicamente cuando se inicialice el directorio `/Frontend` en la rama, el cual actualmente no existe.
-
 - **Librerías Permitidas (Estricto):**
   - Estilos y UI: `Tailwind CSS` + `Shadcn UI` (instalar componentes individuales, no librerías monolíticas).
   - Gráficos: `Recharts`.
@@ -74,3 +72,39 @@ Bajo ninguna circunstancia tienes permitido generar comandos directos para ejecu
   - **Toasts:** Implementar notificaciones de error y éxito.
   - **Prevención de Errores:** Validar formularios en tiempo real.
 - **Reglas Anti-Slop:** Genera código directo, sin comentarios obvios (`// iterar array`). Si mockeas datos, asegúrate de que coincidan con la estructura del backend.
+
+---
+
+## 10. CICLO OPERATIVO ECC Y ESTÁNDARES ANTI-SLOP
+
+* Protocolo ECC Obligatorio: Ante cualquier tarea compleja (creación de servicios, formularios o endpoints), Claude debe operar bajo el ciclo:
+   1. Planifica: Desglosa los pasos lógicos y valida dependencias antes de escribir código.
+   2. Construye: Escribe código limpio, tipado y estrictamente alineado al monolito modular.
+   3. Asegura: Valida restricciones de seguridad (Zero-Trust, aislamiento por `project_id`).
+   4. Testea: Propone o ejecuta pruebas unitarias (JUnit 5 para backend y validación de compilación/lint para frontend) para verificar el resultado.
+* Directrices de Diseño (Web Design Guidelines): Los componentes de interfaz deben priorizar la Ley de Hick (no saturar la vista), incluir estados de carga (Skeletons obligatorios), manejo de errores limpios y una jerarquía de color corporativa basada en Tailwind CSS y Shadcn UI.
+* Prohibición de Slop: Cero comentarios obvios en el código, cero bloques de código incompleto con `// TODO` o `// implementar aquí` si la lógica puede resolverse por completo.
+
+## 11. GRAPHIFY KNOWLEDGE GRAPH CONTEXT (OBLIGATORIO)
+
+Este proyecto mantiene un grafo de conocimiento local en `graphify-out/`. MANDATORIO: Antes de usar Read, Grep, Glob o Bash para explorar código que no conoces, DEBES ejecutar Graphify primero:
+
+* `graphify query "<pregunta>"` — Para explorar la arquitectura o base de código.
+* `graphify path "<A>" "<B>"` — Para descubrir dependencias entre dos símbolos.
+* `graphify explain "<concepto>"` — Para listar todos los nodos relacionados a un concepto.
+
+Solo puedes usar Read/Grep/Glob directamente cuando:
+
+1. Graphify ya te orientó y necesitas modificar líneas específicas.
+2. El archivo `graphify-out/graph.json` no existe.
+
+Después de modificar archivos estructurales, DEBES ejecutar `graphify update .` en la terminal para mantener el grafo actualizado.
+
+## 12. QA Y ANÁLISIS ESTÁTICO EQUIVALENTE (OBLIGATORIO)
+
+Antes de dar por terminada cualquier tarea o pedir autorización de commit, debes pasar este flujo:
+
+1. Backend Estilo: Ejecutar `mvn -f DataAnaliticsEnterprise/pom.xml spotless:apply` (o validar con `mvn -f DataAnaliticsEnterprise/pom.xml verify`) para asegurar formato.
+2. Backend Tipado: La compilación de Maven debe pasar sin advertencias graves de dependencias.
+3. Frontend Tipado y Lint: Ejecutar `npm run typecheck` y `npm run lint` en `/Frontend`. Cero errores tolerados.
+4. Pruebas E2E: Ejecutar `npm run test:e2e` en `/Frontend` para validar flujos críticos con Playwright.

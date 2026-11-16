@@ -19,6 +19,7 @@
         <java.version>23</java.version>
         <test.excludedGroups>postgres</test.excludedGroups>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spotless.version>3.11.0</spotless.version>
     </properties>
 
     <dependencies>
@@ -78,6 +79,40 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--
+                Calidad estática. Alcance inicial: solo el módulo de analítica (M4).
+                El resto de módulos se incorpora ampliando <includes> cuando su equipo lo acuerde.
+                Corregir: mvn -f DataAnaliticsEnterprise/pom.xml spotless:apply
+            -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless.version}</version>
+                <configuration>
+                    <java>
+                        <includes>
+                            <include>Backend/src/main/java/org/dataanaliticsent/analitica/**/*.java</include>
+                            <include>Backend/src/test/java/org/dataanaliticsent/analitica/**/*.java</include>
+                        </includes>
+                        <removeUnusedImports/>
+                        <indent>
+                            <spaces>true</spaces>
+                            <spacesPerTab>4</spacesPerTab>
+                        </indent>
+                        <trimTrailingWhitespace/>
+                        <endWithNewline/>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotless-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
