@@ -32,6 +32,21 @@ class AutorizacionPostgresTests {
 
     @BeforeEach void limpiarRecursos() { recursos.datos.clear(); }
 
+    @Test
+    void analistaDeNegocioEvaluaKpisSoloEnSuProyectoAutorizado() {
+        Fixture analista = fixture("ANALISTA_NEGOCIO");
+        Fixture catalogo = fixture("GESTOR_CATALOGO");
+        var solicitud = SolicitudAcceso.proyecto("m4.kpis.evaluate", analista.project());
+        assertTrue(api.evaluar(analista.user(), solicitud).permitido());
+        assertFalse(api.evaluar(analista.user(),
+                SolicitudAcceso.proyecto("m4.kpis.evaluate", catalogo.project())).permitido());
+        assertFalse(api.evaluar(catalogo.user(),
+                SolicitudAcceso.proyecto("m4.kpis.evaluate", catalogo.project())).permitido());
+        jdbc.sql("UPDATE autorizacion.asignacion_rol SET revoked_at=now() WHERE id=:id")
+                .param("id", analista.assignment()).update();
+        assertFalse(api.evaluar(analista.user(), solicitud).permitido());
+    }
+
     @Test void gestorTienePermisosDeCatalogoYCalidadSoloProgreso() {
         Fixture gestor=fixture("GESTOR_CATALOGO"),calidad=fixture("ANALISTA_CALIDAD");
         assertTrue(api.evaluar(gestor.user(),SolicitudAcceso.proyecto("m1.assets.search",gestor.project())).permitido());

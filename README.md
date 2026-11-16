@@ -17,6 +17,8 @@ El código, las pruebas y los recursos conservan sus rutas en `Backend/src/`.
 
 ### Base de datos de desarrollo
 
+Para levantar `tic_tc_dev` con Docker, ejecutar `postgres-it` y probar el permiso de M4, consulta la [guía de integración con M4 y TC04](docs/INTEGRACION_M4_TC04.md).
+
 Se utiliza Spring JDBC y Flyway como mecanismo único de migración. Las migraciones
 crean los esquemas `identidad`, `contexto`, `autorizacion`, `catalogo`, `auditoria`
 y `versionado`. Usar una base dedicada y vacía para este proyecto.

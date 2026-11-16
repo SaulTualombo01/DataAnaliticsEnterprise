@@ -1,0 +1,22 @@
+name: tic-tc-dev
+
+services:
+  database:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: tic_tc_dev
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configura POSTGRES_PASSWORD en .env}
+      DB_PASSWORD: ${DB_PASSWORD:?Configura DB_PASSWORD en .env}
+    ports:
+      - "127.0.0.1:${TIC_TC_DB_PORT:-55432}:5432"
+    volumes:
+      - tic_tc_postgres:/var/lib/postgresql
+      - ./inicializar-postgres.sh:/docker-entrypoint-initdb.d/01-tic-app.sh:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "tic_app", "-d", "tic_tc_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  tic_tc_postgres:

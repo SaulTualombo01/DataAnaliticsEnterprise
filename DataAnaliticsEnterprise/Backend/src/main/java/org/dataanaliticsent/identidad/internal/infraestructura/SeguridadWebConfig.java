@@ -58,6 +58,8 @@ public class SeguridadWebConfig {
             .httpBasic(basic->basic.disable())
             .authorizeHttpRequests(auth->auth
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/v1/analitica/ping").authenticated()
+                .requestMatchers(HttpMethod.POST,"/api/v1/projects/*/analytics/kpis/evaluate").authenticated()
                 .requestMatchers(HttpMethod.GET,"/api/v1/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/v1/auth/login","/api/v1/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/v1/auth/me").authenticated()

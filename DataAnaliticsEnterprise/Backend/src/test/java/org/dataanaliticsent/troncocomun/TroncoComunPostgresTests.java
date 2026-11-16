@@ -22,7 +22,7 @@ class TroncoComunPostgresTests {
     void migraSinDuplicarRolesYPermisosNiDarAccesoFuncionalAlAdministrador() {
         assertEquals(0, flyway.migrate().migrationsExecuted);
         assertEquals(5L, jdbc.sql("SELECT count(*) FROM autorizacion.rol").query(Long.class).single());
-        assertEquals(55L, jdbc.sql("SELECT count(*) FROM autorizacion.permiso").query(Long.class).single());
+        assertEquals(56L, jdbc.sql("SELECT count(*) FROM autorizacion.permiso").query(Long.class).single());
         assertEquals(0L, jdbc.sql("""
                 SELECT count(*) FROM autorizacion.rol_permiso rp
                 JOIN autorizacion.rol r ON r.id=rp.role_id JOIN autorizacion.permiso p ON p.id=rp.permission_id
