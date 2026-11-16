@@ -232,3 +232,9 @@ base dedicada; no se incluye borrado automático de esquemas ni un script destru
 El estado histórico se almacena como representación tipada versión 1 en JSONB.
 Su hash SHA-256 verifica la representación escrita; el comparador semántico para
 decidir cambios en un redescubrimiento se desarrollará con ese caso de uso.
+
+## Estructura Java de M0
+
+Los componentes de M0 y sus pruebas se agrupan bajo `org.dataanaliticsent.TroncoComun`.
+La clase principal permanece en `org.dataanaliticsent`. Ver
+[estructura de M0](docs/Refactor_M0_TroncoComun.md) para imports y compilación limpia.
