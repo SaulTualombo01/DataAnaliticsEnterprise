@@ -50,6 +50,12 @@ class MigracionEmpresaPostgresTests {
             try(var rows=sql.executeQuery("SELECT admin_revision,email FROM identidad.usuario WHERE id='"+account+"'")) { assertTrue(rows.next()); assertEquals(0,rows.getLong(1)); assertEquals(account+"@example.test",rows.getString(2)); }
             try(var rows=sql.executeQuery("SELECT count(*) FROM autorizacion.asignacion_rol WHERE id IN ('"+a+"','"+b+"')")) { assertTrue(rows.next()); assertEquals(2,rows.getInt(1)); }
             try(var rows=sql.executeQuery("SELECT count(*) FROM auditoria.evento WHERE id='"+event+"'")) { assertTrue(rows.next()); assertEquals(1,rows.getInt(1)); }
+            var v7=Flyway.configure().dataSource(url,user,password).locations("classpath:db/migration").load();
+            assertEquals(1,v7.migrate().migrationsExecuted);assertEquals("7",v7.info().current().getVersion().getVersion());assertEquals(0,v7.migrate().migrationsExecuted);
+            try(var rows=sql.executeQuery("SELECT count(*) FROM secretos.referencia")){assertTrue(rows.next());assertEquals(0,rows.getInt(1));}
+            try(var rows=sql.executeQuery("SELECT count(*) FROM auditoria.evento WHERE id='"+event+"'")){assertTrue(rows.next());assertEquals(1,rows.getInt(1));}
+
+
         }
     }
 }

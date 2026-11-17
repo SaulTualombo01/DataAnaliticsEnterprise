@@ -15,10 +15,11 @@ if (root/'DataAnaliticsEnterprise/Backend/src/main/java/org/dataanaliticsent/cat
 pg=Path(os.environ.get('PG_BIN',r'C:\Program Files\PostgreSQL\18\bin'))
 base=Path(tempfile.mkdtemp(prefix='tic-tc-postgres-'))
 cluster=base/'cluster'; password_file=base/'temporary-password.txt'
-admin_password=secrets.token_urlsafe(32); app_password=secrets.token_urlsafe(32)
+admin_password=secrets.token_urlsafe(32); app_password=secrets.token_urlsafe(32); source_password=secrets.token_urlsafe(32)
 password_file.write_text(admin_password,encoding='utf-8')
 env=dict(os.environ); env['PGPASSWORD']=admin_password
 env['JAVA_HOME']=os.environ.get('JAVA_HOME',r'C:\Program Files\Java\jdk-24')
+env.update(TIC_SECRETS_KEY_IDS='',TIC_SECRETS_ACTIVE_KEY_ID='',TIC_SECRETS_ALLOW_LOCAL_INSECURE='false')
 env['PATH']=env['JAVA_HOME']+r'\bin;'+env['PATH']; env['BOOTSTRAP_ADMIN_ENABLED']='false'
 with socket.socket() as sock: sock.bind(('127.0.0.1',0)); port=sock.getsockname()[1]
 def run(args,**kwargs):
@@ -33,9 +34,10 @@ try:
     password_file.unlink()
     run([pg/'pg_ctl.exe','-D',cluster,'-l',base/'postgres.log','-o',f'-h 127.0.0.1 -p {port}','-w','start'],timeout=60); started=True
     run([pg/'psql.exe','-h','127.0.0.1','-p',str(port),'-U','tic_test_admin','-d','postgres','-v','ON_ERROR_STOP=1'],
-        input=f"CREATE ROLE tic_test_app LOGIN NOSUPERUSER PASSWORD '{app_password}';\nCREATE DATABASE tic_tc_test OWNER tic_test_app;\nCREATE DATABASE tic_upgrade_test OWNER tic_test_app;\n",text=True,timeout=20)
+        input=f"CREATE ROLE tic_test_app LOGIN NOSUPERUSER PASSWORD '{app_password}';\nCREATE DATABASE tic_tc_test OWNER tic_test_app;\nCREATE DATABASE tic_upgrade_test OWNER tic_test_app;\nCREATE ROLE tic_source_test LOGIN NOSUPERUSER PASSWORD '{source_password}';\nCREATE DATABASE tic_source_test OWNER tic_source_test;\n",text=True,timeout=20)
     env.update(DB_URL=f'jdbc:postgresql://127.0.0.1:{port}/tic_tc_test',DB_USER='tic_test_app',DB_PASSWORD=app_password)
     env['DB_UPGRADE_URL']=f'jdbc:postgresql://127.0.0.1:{port}/tic_upgrade_test'
+    env.update(TC11_SOURCE_URL=f'jdbc:postgresql://127.0.0.1:{port}/tic_source_test',TC11_SOURCE_USER='tic_source_test',TC11_SOURCE_PASSWORD=source_password)
     assert not ET.parse(root/'DataAnaliticsEnterprise/pom.xml').findall('.//{http://maven.apache.org/POM/4.0.0}build/{http://maven.apache.org/POM/4.0.0}directory')
     maven=os.environ.get('MAVEN_CMD') or shutil.which('mvn.cmd') or shutil.which('mvn')
     command=[maven,'-B','-ntp','-f','DataAnaliticsEnterprise/pom.xml','-Ppostgres-it','clean','verify']

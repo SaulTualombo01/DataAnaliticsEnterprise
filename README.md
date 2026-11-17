@@ -261,3 +261,9 @@ proyectos, cuentas, invitaciones, membresías y roles con alcances.
 Ver [TC-10](docs/contratos/TC10.md) y [Frontend](Frontend/README.md).
 El modo demo sigue siendo explícito. La integración del catálogo M1 requiere
 su backend; M2/M3/M4 conservan espacios pendientes.
+
+## Referencias protegidas de fuentes (TC-11)
+
+Servicio Java de credenciales PostgreSQL cifradas con AES-GCM y claves externas.
+Incluye V7 y pruebas aisladas; no expone secretos por HTTP ni incorpora
+automáticamente M1. Ver [TC-11](docs/contratos/TC11.md).

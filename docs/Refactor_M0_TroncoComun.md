@@ -18,7 +18,8 @@ DataAnaliticsEnterprise/
         │   │       ├── catalogo/       (esqueleto previo sin implementación M1)
         │   │       ├── contexto/
         │   │       ├── errores/
-        │   │       └── identidad/
+        │   │       ├── identidad/
+        │   │       └── secretos/
         │   └── resources/
         └── test/
             └── java/org/dataanaliticsent/
@@ -27,11 +28,12 @@ DataAnaliticsEnterprise/
                     ├── TroncoComunPostgresTests.java
                     ├── autorizacion/
                     ├── contexto/
-                    └── identidad/
+                    ├── identidad/
+                    └── secretos/
 ~~~
 
 Se actualizaron declaraciones package, imports y referencias Java, junto con
-las rutas públicas documentadas de autorización. La prueba general
+las rutas públicas documentadas de autorización y secretos. La prueba general
 TroncoComunPostgresTests pertenece ahora al paquete org.dataanaliticsent.TroncoComun.
 El movimiento troncocomun→TroncoComun de las pruebas utiliza un nombre intermedio
 para resolver correctamente las diferencias de mayúsculas en Windows.
@@ -47,12 +49,14 @@ cualificado. Los consumidores deben actualizar los imports y recompilar:
 | org.dataanaliticsent.contexto | org.dataanaliticsent.TroncoComun.contexto |
 | org.dataanaliticsent.errores | org.dataanaliticsent.TroncoComun.errores |
 | org.dataanaliticsent.identidad | org.dataanaliticsent.TroncoComun.identidad |
+| org.dataanaliticsent.secretos | org.dataanaliticsent.TroncoComun.secretos |
 
 Ejemplo:
 
 ~~~java
 import org.dataanaliticsent.TroncoComun.autorizacion.AutorizacionApi;
 import org.dataanaliticsent.TroncoComun.identidad.IdentidadActualApi;
+import org.dataanaliticsent.TroncoComun.secretos.SecretosApi;
 ~~~
 
 Es un cambio de namespace Java y requiere adaptar módulos consumidores como M1
