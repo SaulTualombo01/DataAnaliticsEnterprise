@@ -1,0 +1,64 @@
+name: tic-data
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_admin_password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/10-crear-aplicacion.sh:/docker-entrypoint-initdb.d/10-crear-aplicacion.sh:ro
+    secrets:
+      - postgres_admin_password
+      - app_db_password
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "data_analytics_app", "-d", "data_analytics"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  backend:
+    profiles: ["servidor"]
+    image: data-analitics-enterprise-tc:local
+    build:
+      context: ./DataAnaliticsEnterprise
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/data_analytics
+      DB_USER: data_analytics_app
+      SPRING_CONFIG_IMPORT: optional:configtree:/run/secrets/
+      PORT: "8080"
+      SESSION_COOKIE_SECURE: "false"
+      BOOTSTRAP_ADMIN_ENABLED: "false"
+      INVITATION_MANUAL_DELIVERY_ENABLED: "false"
+    secrets:
+      - source: app_db_password
+        target: DB_PASSWORD
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,size=128m
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  postgres_data:
+
+secrets:
+  postgres_admin_password:
+    file: ./.docker/secrets/postgres_admin_password
+  app_db_password:
+    file: ./.docker/secrets/app_db_password

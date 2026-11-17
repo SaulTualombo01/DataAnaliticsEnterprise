@@ -1,14 +1,16 @@
 # DataAnaliticsEnterprise
 Página Web que permite el análisis de datos empresariales
 
-## Interfaz web compartida (Q1)
+## Interfaz web compartida (Q1 y TC-10)
 
 El contenedor React/TypeScript está en [Frontend](Frontend/README.md). Incluye
 navegación para M1–M4, lector de catálogo/diccionario y estados comunes. Desde
 Frontend, ejecutar `npm ci` y `npm run dev:demo` para la demostración explícita,
 o `npm run dev` para utilizar la sesión real y el proxy de API.
 
-La selección real de proyectos y la administración completa pertenecen a Q2.
+TC-10 incorpora sesión/contexto reales y formularios administrativos de empresas,
+cuentas, proyectos, invitaciones, membresías y roles con alcances explícitos.
+Consultar [TC-10](docs/contratos/TC10.md) para ejecución, contratos y límites.
 Consultar catálogo real requiere el backend de M1-04; la rama TC sola no publica
 esas rutas. Las vistas especializadas M2/M3/M4 siguen pendientes.
 
@@ -25,18 +27,35 @@ de M2/M3/M4 sigue pendiente; no es un servicio de extracción empresarial real.
 Ejecutar `python tools/mock_tc13.py` desde este checkout. El workflow valida
 contratos y prueba el mock además de backend y frontend.
 
+## Referencias protegidas (TC-11)
+
+[TC-11](docs/contratos/TC11.md) implementa SecretosApi interna para credenciales
+PostgreSQL cifradas, ciclo de vida, revisiones, auditoría y recuperación exclusiva
+por callback autorizado. V7 añade el almacén; las claves AES-256 vienen del
+entorno del servidor y no hay lectura HTTP de secretos. Sin claves, el resto
+del backend arranca y el almacén falla cerrado. La integración con el adaptador
+de M1 y los formularios de fuentes corresponde a M1-05/06.
+
 ## Backend Spring Boot
 
 El primer bloque administrativo de Q2 incorpora ADMIN_EMPRESA y el ámbito
 ORGANIZATION: alta/consulta de empresas, designación/revocación por el sistema y
 alta/listado de proyectos dentro de la empresa autorizada. Contrato y límites:
 [Administración empresarial](docs/contratos/AdministracionEmpresa.md). V4 añade
-el sexto rol y seis permisos, sin cambiar las migraciones previas. El CRUD de
-cuentas, invitaciones, membresías/roles funcionales y sus pantallas sigue pendiente.
+el sexto rol y seis permisos, sin cambiar las migraciones previas. Las migraciones V5/V6 añaden cuentas/invitaciones y participación funcional.
+[TC-08/TC-09](docs/contratos/TC08_TC09.md) describe sus reglas y TC-10 añade
+sus pantallas. Correo real y recuperación de contraseña siguen pendientes.
 
 El backend es un monolito modular con Spring Boot 4.1.2. La clase
 `org.dataanaliticsent.DataAnaliticsEnterprise` inicia la aplicación y detecta
 los componentes de los módulos que se añadan bajo `org.dataanaliticsent`.
+
+M0 se agrupa bajo el paquete `org.dataanaliticsent.TroncoComun`.
+La clase principal permanece en `org.dataanaliticsent`, como hermana
+de la carpeta TroncoComun. Se conserva Backend/src/main/java como raíz de
+fuentes y las pruebas reflejan la nueva jerarquía. Ver
+[refactor de M0](docs/Refactor_M0_TroncoComun.md) para imports e integración.
+
 El código, las pruebas y los recursos conservan sus rutas en `Backend/src/`.
 
 ### Requisitos
@@ -46,11 +65,35 @@ El código, las pruebas y los recursos conservan sus rutas en `Backend/src/`.
 - En IntelliJ, seleccionar JDK 24 para el proyecto y para Maven, y recargar el POM.
 - PostgreSQL 18 para el entorno validado. La base de plataforma es independiente de las fuentes catalogadas.
 
-### Base de datos de desarrollo
+### Docker para la base y el servidor (desarrollo local)
+
+Desde la raíz, con Docker Desktop iniciado:
+
+~~~powershell
+powershell -ExecutionPolicy Bypass -File .\tools\Preparar-Docker.ps1
+docker compose up -d --wait postgres
+~~~
+
+La base TIC escucha en localhost:5434, crea data_analytics/data_analytics_app y
+conserva datos en su propio volumen. Preparar-Docker genera secretos locales
+la primera vez, los conserva después y configura .env con esa conexión. El
+servicio Windows5432 y panaderia_db5433 se mantienen separados.
+
+Para construir/levantar también el backend:
+
+~~~powershell
+docker compose --profile servidor up -d --build
+~~~
+
+Imagen del servidor: data-analitics-enterprise-tc:local; puerto8080. El frontend
+sigue ejecutándose por separado. [Guía Docker](docs/Docker_Desarrollo.md) detalla
+persistencia, credenciales, arranque con IntelliJ y límites de desarrollo.
+
+### Base de datos de desarrollo (alternativa sin Docker)
 
 Se utiliza Spring JDBC y Flyway como mecanismo único de migración. Las migraciones
 crean los esquemas `identidad`, `contexto`, `autorizacion`, `catalogo`, `auditoria`
-y `versionado`. Usar una base dedicada y vacía para este proyecto.
+y `versionado`; V7 añade `secretos`. Usar una base dedicada y vacía para este proyecto.
 
 Con una cuenta de administración de PostgreSQL, preparar un usuario de desarrollo
 sin privilegios de superusuario y su base (nombres de ejemplo):
@@ -66,9 +109,56 @@ despliegue compartido se deben separar las credenciales de migración y ejecuci�
 con los permisos mínimos; no utilizar la cuenta superusuario para la aplicación.
 No hay cuentas de aplicación, contraseñas ni asignaciones de administrador sembradas.
 
+### Archivo .env del backend
+
+El backend importa automáticamente el archivo
+[DataAnaliticsEnterprise/.env](DataAnaliticsEnterprise/.env). Se creó una copia
+local inicialmente con contraseña vacía. Preparar-Docker.ps1 la completa para
+Docker y ajusta el puerto5434. Para PostgreSQL nativo, configura manualmente
+DB_PASSWORD/DB_URL/DB_USER. La plantilla compartida es
+[.env.example](DataAnaliticsEnterprise/.env.example). En otra copia del proyecto:
+
+~~~powershell
+Copy-Item .\DataAnaliticsEnterprise\.env.example .\DataAnaliticsEnterprise\.env
+~~~
+
+El archivo local y sus variantes están excluidos de Git; la plantilla sí se
+versiona. No colocar el .env dentro de src/main/resources: no debe empaquetarse
+en el JAR. El frontend mantiene su configuración independiente en Frontend.
+
+Se utiliza importación nativa de Spring Boot, con formato Java Properties UTF-8:
+CLAVE=valor, sin export ni comillas alrededor del valor. Una barra inversa
+literal se escribe duplicada; para un espacio inicial usar escape de espacio.
+No pegar credenciales en URLs: usuario/contraseña van en DB_USER/DB_PASSWORD.
+
+Se admite arrancar desde la raíz del repositorio o desde la carpeta del módulo
+DataAnaliticsEnterprise. En IntelliJ, usar uno de esos directorios de trabajo.
+Si además existe un .env en la raíz, el del módulo tiene prioridad. Las
+variables reales del proceso/IntelliJ tienen prioridad sobre el archivo: elimina
+una definición antigua o incorrecta en la configuración Run si quieres usar
+el valor local. La importación es opcional para CI/despliegues que usan entorno;
+el .env no exporta variables a otros procesos.
+
+Desde la raíz, con PostgreSQL activo y el archivo ya completado:
+
+~~~powershell
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-24"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+mvn -f .\DataAnaliticsEnterprise\pom.xml spring-boot:run
+~~~
+
+Para local HTTP la plantilla fija SESSION_COOKIE_SECURE=false; en HTTPS usar
+true. Invitaciones manuales y bootstrap siguen deshabilitados inicialmente.
+No hay una contraseña ni una base de datos creada automáticamente.
+
+La importación y precedencia se apoyan en la
+[configuración externa de Spring Boot](https://docs.spring.io/spring-boot/reference/features/external-config.html).
+
 ### Ejecutar desde la raíz del repositorio
 
-En PowerShell, seleccionar el JDK de la sesión y arrancar el servicio:
+Este ejemplo usa PostgreSQL nativo en5432. Con Docker, utiliza el .env que
+prepara el script (5434), como se explicó arriba. Para configurar el entorno
+manualmente en PowerShell, seleccionar el JDK y arrancar el servicio:
 
 ```powershell
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-24"
@@ -233,44 +323,19 @@ El estado histórico se almacena como representación tipada versión 1 en JSONB
 Su hash SHA-256 verifica la representación escrita; el comparador semántico para
 decidir cambios en un redescubrimiento se desarrollará con ese caso de uso.
 
-## Estructura Java de M0
+## Cuentas e invitaciones (TC, incremento V5)
 
-Los componentes de M0 y sus pruebas se agrupan bajo `org.dataanaliticsent.TroncoComun`.
-La clase principal permanece en `org.dataanaliticsent`. Ver
-[estructura de M0](docs/Refactor_M0_TroncoComun.md) para imports y compilación limpia.
+API de invitaciones/activación, consulta y desactivación de cuentas con
+aislamiento por empresa, revocación de acceso y protección del último
+administrador. [Contrato y guía](docs/contratos/CuentasInvitaciones.md).
+Entrega manual local deshabilitada por defecto; habilitar explícitamente
+INVITATION_MANUAL_DELIVERY_ENABLED=true para pruebas, sin envío de correo.
+No incluye todavía pantallas administrativas ni roles funcionales por proyecto.
 
-## Cuentas e invitaciones
+## TC-08/TC-09: edición, membresías, roles y archivo
 
-Se incorpora la activación por invitación de un solo uso, consulta paginada y
-desactivación de cuentas con RBAC y revocación de accesos. Migración aditiva V5.
-La entrega manual exige INVITATION_MANUAL_DELIVERY_ENABLED=true; no se crean
-contraseñas predeterminadas. Ver [contrato](docs/contratos/CuentasInvitaciones.md).
-
-## Participación empresarial y proyectos
-
-TC-08/09 incorpora pertenencias, membresías, rol funcional único por proyecto,
-alcances explícitos e historial de revocaciones. Los proyectos archivados
-permiten únicamente las lecturas autorizadas. Incluye capacidades administrativas
-y contexto de trabajo para el futuro frontend TC-10. Migración aditiva V6.
-Ver [contratos y reglas](docs/contratos/TC08_TC09.md).
-
-## Interfaz administrativa TC-10
-
-La interfaz real incorpora acceso, activación, administración empresarial,
-proyectos, cuentas, invitaciones, membresías y roles con alcances.
-Ver [TC-10](docs/contratos/TC10.md) y [Frontend](Frontend/README.md).
-El modo demo sigue siendo explícito. La integración del catálogo M1 requiere
-su backend; M2/M3/M4 conservan espacios pendientes.
-
-## Referencias protegidas de fuentes (TC-11)
-
-Servicio Java de credenciales PostgreSQL cifradas con AES-GCM y claves externas.
-Incluye V7 y pruebas aisladas; no expone secretos por HTTP ni incorpora
-automáticamente M1. Ver [TC-11](docs/contratos/TC11.md).
-
-## Variables locales del backend
-
-Copiar DataAnaliticsEnterprise/.env.example a DataAnaliticsEnterprise/.env y
-completar la conexión local. Formato Java Properties UTF-8, sin export ni comillas.
-Spring Boot carga el archivo desde la raíz del repositorio o módulo; el entorno
-del proceso tiene prioridad. Los archivos locales quedan excluidos de Git.
+Backend de participación empresarial/proyectos con un rol funcional vigente,
+alcances explícitos, historial, revisión administrativa y contexto personal.
+[Guía y contratos](docs/contratos/TC08_TC09.md). V6 es nueva y requiere resolver
+conflictos heredados antes de migrar;6 roles/77 permisos. La interfaz se integra
+en TC-10. Cambios actuales de TC aún no incorporados a la rama M1.
