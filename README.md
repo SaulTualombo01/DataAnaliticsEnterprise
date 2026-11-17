@@ -267,3 +267,10 @@ su backend; M2/M3/M4 conservan espacios pendientes.
 Servicio Java de credenciales PostgreSQL cifradas con AES-GCM y claves externas.
 Incluye V7 y pruebas aisladas; no expone secretos por HTTP ni incorpora
 automáticamente M1. Ver [TC-11](docs/contratos/TC11.md).
+
+## Variables locales del backend
+
+Copiar DataAnaliticsEnterprise/.env.example a DataAnaliticsEnterprise/.env y
+completar la conexión local. Formato Java Properties UTF-8, sin export ni comillas.
+Spring Boot carga el archivo desde la raíz del repositorio o módulo; el entorno
+del proceso tiene prioridad. Los archivos locales quedan excluidos de Git.

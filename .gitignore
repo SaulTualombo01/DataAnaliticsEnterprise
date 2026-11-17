@@ -1,2 +1,7 @@
 # IntelliJ IDEA
 .idea/
+
+# Variables y credenciales locales; conservar solo las plantillas.
+.env
+.env.*
+!.env.example
