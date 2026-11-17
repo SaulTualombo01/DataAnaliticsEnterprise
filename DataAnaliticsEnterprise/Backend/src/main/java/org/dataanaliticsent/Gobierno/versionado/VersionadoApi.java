@@ -1,6 +1,7 @@
 package org.dataanaliticsent.Gobierno.versionado;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,7 +52,23 @@ public interface VersionadoApi {
             UUID previousVersionId, Instant createdAt, AuditoriaApi.Actor actor, String reason,
             int representationVersion, String estadoJson, String contentHash, UUID auditEventId) { }
 
+    enum TipoCambio { AGREGADO, ELIMINADO, MODIFICADO }
+
+    /** Un campo del estado que cambió. Los valores van en JSON canónico; null si no existía. */
+    record Cambio(String campo, TipoCambio tipo, String valorAnterior, String valorNuevo) { }
+
+    /** Diferencias de "desde" a "hasta", ordenadas por nombre de campo. Vacía si son iguales. */
+    record Comparacion(Version desde, Version hasta, List<Cambio> cambios) {
+        public Comparacion { cambios = List.copyOf(cambios); }
+    }
+
     ResultadoVersion versionar(SolicitudVersion solicitud);
+
+    /**
+     * Compara dos versiones del mismo recurso, en cualquier orden. Exige m3.history.read.
+     * Las versiones de otro recurso o proyecto se tratan como inexistentes.
+     */
+    Comparacion comparar(UUID projectId, String resourceType, UUID resourceId, UUID desdeVersionId, UUID hastaVersionId);
 
     /** Versiones del recurso, de la más reciente a la más antigua. Exige m3.history.read. */
     Pagina<Version> historial(UUID projectId, String resourceType, UUID resourceId, int page, int pageSize);

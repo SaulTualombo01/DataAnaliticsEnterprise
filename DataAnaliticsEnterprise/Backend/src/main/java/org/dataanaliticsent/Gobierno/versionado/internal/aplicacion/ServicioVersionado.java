@@ -4,26 +4,31 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.dataanaliticsent.Gobierno.versionado.ConflictoVersionException;
 import org.dataanaliticsent.Gobierno.comun.Pagina;
+import org.dataanaliticsent.Gobierno.comun.RecursoNoEncontradoGobiernoException;
 import org.dataanaliticsent.Gobierno.comun.PermisosGobierno;
 import org.dataanaliticsent.Gobierno.versionado.VersionadoApi;
 import org.dataanaliticsent.Gobierno.comun.PuertoAutorizacion;
 import org.dataanaliticsent.Gobierno.comun.PuertoIdentidad;
 import org.dataanaliticsent.Gobierno.comun.ReglasAuditoria;
+import org.dataanaliticsent.Gobierno.versionado.internal.dominio.ComparadorVersiones;
 import org.dataanaliticsent.Gobierno.versionado.internal.dominio.RepositorioVersiones;
 import org.dataanaliticsent.Gobierno.comun.RepresentacionCanonica;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 @Service
 public class ServicioVersionado implements VersionadoApi {
     /** Versión del formato de state_payload; subirla si cambia la forma del estado guardado. */
     static final int REPRESENTACION = 1;
+    private static final JsonMapper JSON = JsonMapper.builder().build();
 
     private final RepositorioVersiones repositorio;
     private final PuertoIdentidad identidad;
@@ -84,6 +89,26 @@ public class ServicioVersionado implements VersionadoApi {
         Objects.requireNonNull(versionId, "versionId obligatorio");
         autorizacion.exigir(identidad.actorActual(), PermisosGobierno.HISTORIAL_LEER, projectId);
         return repositorio.buscar(projectId, resourceType, resourceId, versionId);
+    }
+
+    @Override
+    public Comparacion comparar(UUID projectId, String resourceType, UUID resourceId, UUID desdeVersionId, UUID hastaVersionId) {
+        validarRecurso(projectId, resourceType, resourceId);
+        Objects.requireNonNull(desdeVersionId, "desdeVersionId obligatorio");
+        Objects.requireNonNull(hastaVersionId, "hastaVersionId obligatorio");
+        autorizacion.exigir(identidad.actorActual(), PermisosGobierno.HISTORIAL_LEER, projectId);
+        Version desde = repositorio.buscar(projectId, resourceType, resourceId, desdeVersionId)
+                .orElseThrow(() -> new RecursoNoEncontradoGobiernoException("Versión 'desde' no disponible"));
+        Version hasta = repositorio.buscar(projectId, resourceType, resourceId, hastaVersionId)
+                .orElseThrow(() -> new RecursoNoEncontradoGobiernoException("Versión 'hasta' no disponible"));
+        return new Comparacion(desde, hasta,
+                ComparadorVersiones.diferencias(estado(desde.estadoJson()), estado(hasta.estadoJson())));
+    }
+
+    /** El estado guardado es un objeto JSON; se lee a mapa para comparar campo por campo. */
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> estado(String json) {
+        return JSON.readValue(json, Map.class);
     }
 
     private static void validarRecurso(UUID projectId, String resourceType, UUID resourceId) {

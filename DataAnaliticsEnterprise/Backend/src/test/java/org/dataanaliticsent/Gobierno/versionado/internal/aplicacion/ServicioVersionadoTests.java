@@ -99,4 +99,22 @@ class ServicioVersionadoTests {
         assertEquals(1, antigua.number());
         assertEquals(2, repositorio.ultima(DoblesGobierno.PROYECTO, "gobierno.politica", POLITICA).orElseThrow().number());
     }
+
+    @Test
+    void compararDosVersionesDelMismoRecurso() {
+        ResultadoVersion v1 = servicio.versionar(solicitud(Map.of("estado", "DRAFT", "nombre", "PII"), Previa.ninguna()));
+        ResultadoVersion v2 = servicio.versionar(solicitud(Map.of("estado", "ACTIVE", "nombre", "PII"), Previa.de(v1.versionId())));
+        autorizacion.conceder(PermisosGobierno.HISTORIAL_LEER, DoblesGobierno.PROYECTO);
+
+        var comparacion = servicio.comparar(DoblesGobierno.PROYECTO, "gobierno.politica", POLITICA, v1.versionId(), v2.versionId());
+
+        assertEquals(1, comparacion.cambios().size());
+        assertEquals("estado", comparacion.cambios().getFirst().campo());
+        assertEquals("\"DRAFT\"", comparacion.cambios().getFirst().valorAnterior());
+        assertTrue(servicio.comparar(DoblesGobierno.PROYECTO, "gobierno.politica", POLITICA, v2.versionId(), v2.versionId())
+                .cambios().isEmpty());
+        assertThrows(org.dataanaliticsent.Gobierno.comun.RecursoNoEncontradoGobiernoException.class,
+                () -> servicio.comparar(DoblesGobierno.PROYECTO, "gobierno.politica", UUID.randomUUID(),
+                        v1.versionId(), v2.versionId()));
+    }
 }

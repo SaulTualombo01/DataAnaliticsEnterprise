@@ -28,6 +28,13 @@ public final class RepresentacionCanonica {
         return sb.toString();
     }
 
+    /** JSON canónico de cualquier valor admitido (texto, número, lista, mapa, null…). */
+    public static String valor(Object valor) {
+        StringBuilder sb = new StringBuilder();
+        escribir(sb, valor, 0);
+        return sb.toString();
+    }
+
     public static String sha256(String texto) {
         try {
             byte[] hash = MessageDigest.getInstance("SHA-256").digest(texto.getBytes(StandardCharsets.UTF_8));
