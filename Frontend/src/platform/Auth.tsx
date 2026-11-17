@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import type { Gateway, Profile } from '../shared/contracts';
 import { ApiError } from '../shared/errors';
 import { ErrorNote, Field, useAction } from './ui';
+import { Brand } from '../shared/Brand';
 
 export function Auth({gateway,logged,expired}:{gateway:Gateway;logged(profile:Profile):void;expired:boolean}) {
   const [mode,setMode]=useState<'login'|'activate'>('login');
@@ -24,7 +25,7 @@ export function Auth({gateway,logged,expired}:{gateway:Gateway;logged(profile:Pr
       void action.run(s=>gateway.platform!.activate(token,password,s),()=>{ form.reset(); setActivated(true); setMode('login'); });
     } else void action.run(()=>gateway.login(String(data.get('email')||'').trim(),password),logged);
   }
-  return <main id="main" className="login-page"><section className="login-panel"><div className="brand-mark" aria-hidden="true">D</div><p className="product-name">DataAnalitics Enterprise</p><h1>{mode==='login'?'Tu espacio de datos':'Activa tu cuenta'}</h1><p>{mode==='login'?'Accede a tus proyectos y administra el trabajo de tu empresa.':'Introduce el código que recibiste y elige tu contraseña.'}</p>
+  return <main id="main" className="login-page"><section className="login-panel"><Brand className="brand-login"/><h1>{mode==='login'?'Tu espacio de datos':'Activa tu cuenta'}</h1><p>{mode==='login'?'Accede a tus proyectos y administra el trabajo de tu empresa.':'Introduce el código que recibiste y elige tu contraseña.'}</p>
     {expired?<p role="status">La sesión terminó. Vuelve a entrar para continuar.</p>:null}
     {activated?<p className="success-note" role="status">Cuenta activada. Ya puedes iniciar sesión con tu correo y contraseña.</p>:null}
     <form key={mode} onSubmit={submit} aria-busy={action.pending}><fieldset disabled={action.pending}>

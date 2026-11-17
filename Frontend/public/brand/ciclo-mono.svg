@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title">
+  <title id="title">Ciclo — DataAnalitics Enterprise</title>
+  <defs><path id="quarter" d="M 53 6.1024 A 44 44 0 0 1 93.8976 47 L 80.8545 47 A 31 31 0 0 0 53 19.1455 Z" /></defs>
+  <g stroke-width="1" stroke-linejoin="round">
+    <use href="#quarter" transform="rotate(0 50 50)" fill="#163B59" stroke="#163B59" />
+    <use href="#quarter" transform="rotate(90 50 50)" fill="#163B59" stroke="#163B59" />
+    <use href="#quarter" transform="rotate(180 50 50)" fill="#163B59" stroke="#163B59" />
+    <use href="#quarter" transform="rotate(270 50 50)" fill="#163B59" stroke="#163B59" />
+  </g>
+  <circle cx="50" cy="50" r="10" fill="#163B59" />
+</svg>

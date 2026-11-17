@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { Gateway, Profile } from '../shared/contracts';
 import { ApiError, UUID } from '../shared/errors';
+import { Brand } from '../shared/Brand';
 import { modules } from '../modules/registry';
 import type { ModuleId } from '../modules/registry';
 import { Catalogo } from '../modules/catalogo/Catalogo';
@@ -53,7 +54,7 @@ function Workspace({api,gateway,profile,expired,loggedOut}:{api:PlatformClient;g
   const module=modules.find(m=>m.id===view);
   const title=view==='contexts'?'Tus proyectos':view==='administration'?'Administración':module?.title||'Espacio de trabajo';
   const description=view==='contexts'?'Selecciona el proyecto en el que vas a trabajar.':view==='administration'?'Gestiona empresas, personas y accesos dentro de tus facultades.':module?.description;
-  return <div className="app-shell real-shell"><aside className="sidebar"><div className="brand"><span className="brand-mark" aria-hidden="true">D</span><div><strong>DataAnalitics</strong><span>Enterprise</span></div></div>
+  return <div className="app-shell real-shell"><aside className="sidebar"><Brand variant="inverse"/>
     <nav aria-label="Componentes de la plataforma"><button className="nav-item" aria-current={view==='contexts'?'page':undefined} onClick={()=>{setView('contexts');setNotice('');}}>Mis proyectos</button>
       {canAdmin?<button className="nav-item" aria-current={view==='administration'?'page':undefined} onClick={()=>{setView('administration');setNotice('');}}>Administración</button>:null}
       {modules.map(m=><button className="nav-item" key={m.id} aria-current={view===m.id?'page':undefined} onClick={()=>{setView(m.id);setNotice('');}}><span className="module-code">{m.code}</span>{m.label}</button>)}

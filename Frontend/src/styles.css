@@ -25,10 +25,17 @@ p { max-width: 75ch; }
 .demo-banner { background: #dcefeb; color: #17483e; padding: .65rem 1.5rem; display: flex; gap: 1rem; align-items: baseline; border-bottom: 1px solid #9dc7bb; font-size: .88rem; }
 .app-shell { display: grid; grid-template-columns: 230px minmax(0, 1fr); min-height: calc(100vh - 43px); }
 .sidebar { background: #163b59; color: white; padding: 2rem 1.1rem; display: flex; flex-direction: column; gap: 3rem; }
-.brand { display: flex; gap: .7rem; align-items: center; padding: 0 .3rem; }
-.brand-mark { display: inline-flex; align-items: center; justify-content: center; height: 38px; width: 38px; flex-shrink: 0; border: 2px solid currentColor; border-radius: 10px 0 10px 0; font-size: 1.4rem; font-weight: 700; }
-.brand strong { display: block; font-size: 1.1rem; }
-.brand span:not(.brand-mark) { display: block; font-size: .72rem; color: #d1e1eb; }
+.brand { display: flex; gap: .7rem; align-items: center; padding: 0 .3rem; color: #163b59; }
+.brand-symbol { display: block; width: 40px; height: 40px; flex: 0 0 auto; }
+.brand-wordmark { min-width: 0; }
+.brand strong { display: block; font-family: Bahnschrift, "Segoe UI", sans-serif; font-size: 1.1rem; font-weight: 600; line-height: 1.2; letter-spacing: -.025em; white-space: nowrap; }
+.brand .brand-enterprise { display: block; margin-top: .25rem; font-size: .65rem; line-height: 1.2; letter-spacing: .2em; text-transform: uppercase; color: #657985; }
+.brand-inverse { color: #fff; }
+.brand-inverse .brand-enterprise { color: #d1e1eb; }
+.brand-login { padding: 0; margin-bottom: 1.7rem; gap: .9rem; }
+.brand-login .brand-symbol { width: 52px; height: 52px; }
+.brand-login strong { font-size: 1.5rem; }
+.brand-login .brand-enterprise { font-size: .75rem; letter-spacing: .24em; }
 nav { display: grid; gap: .5rem; }
 .nav-item { border: none; background: transparent; display: flex; align-items: center; gap: 1rem; padding: .8rem 1rem; text-align: left; font-weight: 400; color: #dce9f0; }
 .nav-item[aria-current="page"] { background: #fff; color: #163b59; font-weight: 600; }
@@ -92,8 +99,6 @@ td { font-size: .9rem; }
 .footer { display: flex; justify-content: space-between; gap: 1rem; padding: 1rem 2.3rem; color: #526676; font-size: .75rem; border-top: 1px solid #d1e0e8; }
 .login-page { min-height: calc(100vh - 45px); display: grid; place-items: center; padding: 2rem 1rem; }
 .login-panel { width: min(100%, 470px); padding: 2.5rem; border: 1px solid #c9dae3; border-top: 5px solid #087e8b; background: white; }
-.login-panel .brand-mark { color: #163b59; margin-bottom: 1rem; }
-.product-name { color: #526676; font-size: .9rem; margin-bottom: 1.4rem; }
 .login-panel form { display: grid; gap: .6rem; margin-top: 1.5rem; }
 .login-panel form label:not(:first-child) { margin-top: .5rem; }
 .login-panel form label { margin-bottom: 0; }
@@ -101,11 +106,11 @@ td { font-size: .9rem; }
 .spinner { display: inline-block; height: 22px; width: 22px; border: 3px solid #bfd9df; border-top-color: #08717b; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-@media (max-width: 980px) { .app-shell { grid-template-columns: 195px minmax(0,1fr); } .brand { align-items: flex-start; } .brand-mark { height: 31px; width: 31px; } .brand strong { font-size: .95rem; } .topbar, .content { padding-left: 1.4rem; padding-right: 1.4rem; } .account > span { display: none; } }
+@media (max-width: 980px) { .app-shell { grid-template-columns: 195px minmax(0,1fr); } .sidebar .brand-symbol { height: 34px; width: 34px; } .sidebar .brand strong { font-size: .95rem; } .topbar, .content { padding-left: 1.4rem; padding-right: 1.4rem; } .account > span { display: none; } }
 @media (max-width: 700px) {
   .demo-banner { flex-direction: column; gap: .15rem; padding: .6rem 1rem; }
   .app-shell { display: block; } .sidebar { padding: 1rem; gap: 1rem; } .sidebar-note { display: none; }
-  .brand span:not(.brand-mark) { font-size: .75rem; } nav { display: flex; overflow-x: auto; gap: .4rem; padding: .3rem 0; }
+  nav { display: flex; overflow-x: auto; gap: .4rem; padding: .3rem 0; }
   .nav-item { gap: .5rem; padding: .6rem .7rem; flex-shrink: 0; font-size: .9rem; } .module-code { font-size: .7rem; }
   .topbar { padding: 1rem; align-items: flex-start; } .topbar > div:first-child { max-width: 60%; } .content { padding: 1.5rem 1rem 2rem; }
   .context-controls { flex-direction: column; gap: .9rem; } .context-controls > div { width: 100%; }

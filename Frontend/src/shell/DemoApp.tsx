@@ -5,6 +5,7 @@ import { aborted, ApiError, message, UUID } from '../shared/http';
 import { modules } from '../modules/registry';
 import type { ModuleId } from '../modules/registry';
 import { Catalogo } from '../modules/catalogo/Catalogo';
+import { Brand } from '../shared/Brand';
 
 type Locator = { projectId: string; assetId: string };
 
@@ -25,7 +26,7 @@ function Login({ gateway, onLogin, expired }: { gateway: Gateway; onLogin(profil
     catch (failure) { setError(failure); }
     finally { setBusy(false); }
   }
-  return <main id="main" className="login-page"><section className="login-panel"><div className="brand-mark" aria-hidden="true">D</div><p className="product-name">DataAnalitics Enterprise</p><h1>Tu espacio de datos</h1><p>Consulta los activos y el diccionario de tu proyecto.</p>
+  return <main id="main" className="login-page"><section className="login-panel"><Brand className="brand-login"/><h1>Tu espacio de datos</h1><p>Consulta los activos y el diccionario de tu proyecto.</p>
     {expired ? <p role="status">La sesión terminó. Vuelve a entrar para continuar.</p> : null}
     {gateway.demo ? <button disabled={busy} onClick={() => void enter()}>{busy ? 'Entrando…' : 'Entrar a la demostración'}</button> : <form onSubmit={enter}><label htmlFor="email">Correo electrónico</label><input id="email" name="email" type="email" autoComplete="username" required maxLength={254} disabled={busy} /><label htmlFor="password">Contraseña</label><input id="password" name="password" type="password" autoComplete="current-password" required disabled={busy} /><button disabled={busy} type="submit">{busy ? 'Verificando acceso…' : 'Iniciar sesión'}</button></form>}
     {error ? <p className="error-text" role="alert">{error instanceof ApiError && error.status === 401 ? 'No se pudo iniciar sesión. Revisa tus credenciales.' : message(error)}</p> : null}
@@ -77,7 +78,7 @@ export function DemoApp({ gateway }: { gateway: Gateway }) {
     <a className="skip-link" href="#main">Ir al contenido</a>
     {gateway.demo ? <div className="demo-banner"><strong>Demostración</strong><span>Identidad, proyectos y activos sintéticos. Este modo no verifica permisos reales.</span></div> : null}
     {boot ? <main id="main" className="notice" role="status"><h1>Preparando tu espacio</h1><p>Verificando la sesión.</p></main> : bootError ? <main id="main" className="notice error" role="alert"><h1>No se pudo verificar la sesión</h1><p>{message(bootError)}</p><button onClick={() => { setBootError(undefined); setBoot(true); setBootAttempt(n => n + 1); }}>Volver a intentar</button></main> : !profile ? <Login gateway={gateway} expired={expired} onLogin={user => { setProfile(user); setExpired(false); setScenario('normal'); setActive('catalogo'); setContextIndex(0); setLocator(null); }} /> : <div className="app-shell">
-      <aside className="sidebar"><div className="brand"><span className="brand-mark" aria-hidden="true">D</span><div><strong>DataAnalitics</strong><span>Enterprise</span></div></div><nav aria-label="Componentes de la plataforma">{modules.map(item => <button key={item.id} className="nav-item" aria-current={active === item.id ? 'page' : undefined} onClick={() => setActive(item.id)}><span className="module-code">{item.code}</span>{item.label}</button>)}</nav><div className="sidebar-note"><strong>Un contexto, un alcance</strong><p>Las consultas están sujetas a los permisos vigentes de tu cuenta.</p></div></aside>
+      <aside className="sidebar"><Brand variant="inverse"/><nav aria-label="Componentes de la plataforma">{modules.map(item => <button key={item.id} className="nav-item" aria-current={active === item.id ? 'page' : undefined} onClick={() => setActive(item.id)}><span className="module-code">{item.code}</span>{item.label}</button>)}</nav><div className="sidebar-note"><strong>Un contexto, un alcance</strong><p>Las consultas están sujetas a los permisos vigentes de tu cuenta.</p></div></aside>
       <div className="workspace"><header className="topbar"><div><span className="context-label">{context ? context.organization_name : 'Espacio de trabajo'}</span><strong>{context ? context.role_label : profile.display_name}</strong></div><div className="account"><span>{profile.display_name}</span><button className="secondary" disabled={closing} onClick={() => void logout()}>{closing ? 'Cerrando…' : 'Cerrar sesión'}</button></div></header>
         <main id="main" className="content"><div className="page-heading"><div><h1>{module.title}</h1><p>{module.description}</p></div><span className="module-label">{module.code}</span></div>
           {logoutError ? <p className="error-text" role="alert">No se pudo cerrar la sesión. Vuelve a intentarlo.</p> : null}
