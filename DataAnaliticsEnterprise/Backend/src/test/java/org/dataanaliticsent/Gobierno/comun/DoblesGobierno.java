@@ -15,6 +15,17 @@ import org.dataanaliticsent.Gobierno.auditoria.AuditoriaApi.Filtro;
 import org.dataanaliticsent.Gobierno.versionado.VersionadoApi.Version;
 import org.dataanaliticsent.Gobierno.auditoria.internal.dominio.RepositorioAuditoria;
 import org.dataanaliticsent.Gobierno.versionado.internal.dominio.RepositorioVersiones;
+import org.dataanaliticsent.Gobierno.cumplimiento.CumplimientoApi.Evaluacion;
+import org.dataanaliticsent.Gobierno.cumplimiento.internal.dominio.RepositorioEvaluaciones;
+import org.dataanaliticsent.Gobierno.fichas.ConflictoFichaException;
+import org.dataanaliticsent.Gobierno.fichas.FichasGobiernoApi.Ficha;
+import org.dataanaliticsent.Gobierno.fichas.internal.dominio.RepositorioFichas;
+import org.dataanaliticsent.Gobierno.politicas.ConflictoPoliticaException;
+import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.EstadoPolitica;
+import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.FiltroPoliticas;
+import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.Politica;
+import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.ReglaGobierno;
+import org.dataanaliticsent.Gobierno.politicas.internal.dominio.RepositorioPoliticas;
 
 /** Dobles en memoria para probar los servicios sin PostgreSQL ni tronco común. */
 public final class DoblesGobierno {
@@ -58,6 +69,68 @@ public final class DoblesGobierno {
             return eventos.stream().filter(e -> f.projectId().equals(e.projectId()))
                     .sorted(Comparator.comparing(Evento::occurredAt).thenComparing(Evento::id).reversed())
                     .skip(desplazamiento).limit(limite).toList();
+        }
+    }
+
+    /** Repositorio de políticas en memoria con las mismas reglas de unicidad y revisión que PostgreSQL. */
+    public static final class Politicas implements RepositorioPoliticas {
+        public final List<Politica> datos = new ArrayList<>();
+
+        @Override public Optional<Politica> buscar(UUID projectId, UUID policyId) {
+            return datos.stream().filter(p -> p.projectId().equals(projectId) && p.id().equals(policyId)).findFirst();
+        }
+        @Override public void insertar(Politica p) { exigirNombreLibre(p); datos.add(p); }
+        @Override public void actualizar(Politica p, long revisionLeida) {
+            Politica actual = buscar(p.projectId(), p.id()).orElseThrow();
+            if (actual.revision() != revisionLeida) throw new ConflictoPoliticaException("revisión");
+            exigirNombreLibre(p);
+            datos.set(datos.indexOf(actual), p);
+        }
+        @Override public void asociarActivo(UUID pr, UUID po, UUID a, UUID actor, Instant t) { }
+        @Override public void retirarActivo(UUID pr, UUID po, UUID a, UUID actor, Instant t) { }
+        @Override public void insertarRegla(UUID pr, UUID po, ReglaGobierno r, UUID actor, Instant t) { }
+        @Override public void borrarRegla(UUID pr, UUID po, UUID r) { }
+        @Override public List<Politica> listar(UUID projectId, FiltroPoliticas f, int limite, int desplazamiento) {
+            return datos.stream().filter(p -> p.projectId().equals(projectId))
+                    .filter(p -> f.category() == null || p.category() == f.category())
+                    .filter(p -> f.status() == null || p.status() == f.status())
+                    .sorted(Comparator.comparing(Politica::createdAt).thenComparing(Politica::id))
+                    .skip(desplazamiento).limit(limite).toList();
+        }
+        @Override public List<Politica> deActivo(UUID projectId, UUID assetId) {
+            return datos.stream().filter(p -> p.projectId().equals(projectId) && p.assetIds().contains(assetId))
+                    .sorted(Comparator.comparing(Politica::createdAt).thenComparing(Politica::name)).toList();
+        }
+        private void exigirNombreLibre(Politica p) {
+            boolean repetido = datos.stream().anyMatch(o -> !o.id().equals(p.id()) && o.projectId().equals(p.projectId())
+                    && o.status() != EstadoPolitica.RETIRED && o.name().equalsIgnoreCase(p.name()));
+            if (repetido && p.status() != EstadoPolitica.RETIRED) throw new ConflictoPoliticaException("nombre");
+        }
+    }
+
+    public static final class Fichas implements RepositorioFichas {
+        public final List<Ficha> datos = new ArrayList<>();
+        @Override public Optional<Ficha> buscar(UUID projectId, UUID assetId) {
+            return datos.stream().filter(f -> f.projectId().equals(projectId) && f.assetId().equals(assetId)).findFirst();
+        }
+        @Override public void guardar(Ficha ficha, Long revisionLeida) {
+            Optional<Ficha> actual = buscar(ficha.projectId(), ficha.assetId());
+            if (!java.util.Objects.equals(actual.map(Ficha::revision).orElse(null), revisionLeida)) {
+                throw new ConflictoFichaException("revisión");
+            }
+            actual.ifPresent(datos::remove);
+            datos.add(ficha);
+        }
+    }
+
+    public static final class Evaluaciones implements RepositorioEvaluaciones {
+        public final List<Evaluacion> datos = new ArrayList<>();
+        @Override public void guardar(Evaluacion e) { datos.add(e); }
+        @Override public List<Evaluacion> listar(UUID projectId, UUID assetId, int limite, int desplazamiento) {
+            List<Evaluacion> propias = new ArrayList<>(datos.stream()
+                    .filter(e -> e.projectId().equals(projectId) && e.assetId().equals(assetId)).toList());
+            java.util.Collections.reverse(propias);
+            return propias.stream().skip(desplazamiento).limit(limite).toList();
         }
     }
 

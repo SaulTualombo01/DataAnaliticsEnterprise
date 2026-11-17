@@ -5,11 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.dataanaliticsent.Gobierno.auditoria.AuditoriaApi.Resultado;
 import org.dataanaliticsent.Gobierno.auditoria.internal.aplicacion.ServicioAuditoria;
@@ -26,7 +22,7 @@ import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.FiltroPoliticas;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.NuevaPolitica;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.Politica;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.PoliticaAplicable;
-import org.dataanaliticsent.Gobierno.politicas.internal.dominio.RepositorioPoliticas;
+import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.TipoRegla;
 import org.dataanaliticsent.Gobierno.versionado.internal.aplicacion.ServicioVersionado;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +35,7 @@ class ServicioPoliticasTests {
     private final DoblesGobierno.Versiones versiones = new DoblesGobierno.Versiones();
     private final DoblesGobierno.Autorizacion autorizacion = new DoblesGobierno.Autorizacion();
     private final DoblesGobierno.Catalogo catalogo = new DoblesGobierno.Catalogo().registrar(P, CLIENTES);
-    private final EnMemoria politicas = new EnMemoria();
+    private final DoblesGobierno.Politicas politicas = new DoblesGobierno.Politicas();
     private final ServicioPoliticas servicio = new ServicioPoliticas(politicas,
             new ServicioAuditoria(eventos, DoblesGobierno.identidad(), autorizacion),
             new ServicioVersionado(versiones, DoblesGobierno.identidad(), autorizacion),
@@ -199,37 +195,38 @@ class ServicioPoliticasTests {
                 () -> servicio.buscar(UUID.randomUUID(), FiltroPoliticas.ninguno(), 1, 25));
     }
 
-    /** Repositorio en memoria con las mismas reglas de unicidad y revisión que PostgreSQL. */
-    static final class EnMemoria implements RepositorioPoliticas {
-        final List<Politica> datos = new ArrayList<>();
+    @Test
+    void lasReglasSeVersionanConLaPoliticaYNoSeDuplican() {
+        concederTodo();
+        autorizacion.conceder(PermisosGobierno.POLITICAS_REGLAS, P);
+        Politica p = crearPii();
 
-        @Override public Optional<Politica> buscar(UUID projectId, UUID policyId) {
-            return datos.stream().filter(p -> p.projectId().equals(projectId) && p.id().equals(policyId)).findFirst();
-        }
-        @Override public void insertar(Politica p) { exigirNombreLibre(p); datos.add(p); }
-        @Override public void actualizar(Politica p, long revisionLeida) {
-            Politica actual = buscar(p.projectId(), p.id()).orElseThrow();
-            if (actual.revision() != revisionLeida) throw new ConflictoPoliticaException("revisión");
-            exigirNombreLibre(p);
-            datos.set(datos.indexOf(actual), p);
-        }
-        @Override public void asociarActivo(UUID pr, UUID po, UUID a, UUID actor, Instant t) { }
-        @Override public void retirarActivo(UUID pr, UUID po, UUID a, UUID actor, Instant t) { }
-        @Override public List<Politica> listar(UUID projectId, FiltroPoliticas f, int limite, int desplazamiento) {
-            return datos.stream().filter(p -> p.projectId().equals(projectId))
-                    .filter(p -> f.category() == null || p.category() == f.category())
-                    .filter(p -> f.status() == null || p.status() == f.status())
-                    .sorted(Comparator.comparing(Politica::createdAt).thenComparing(Politica::id))
-                    .skip(desplazamiento).limit(limite).toList();
-        }
-        @Override public List<Politica> deActivo(UUID projectId, UUID assetId) {
-            return datos.stream().filter(p -> p.projectId().equals(projectId) && p.assetIds().contains(assetId))
-                    .sorted(Comparator.comparing(Politica::createdAt).thenComparing(Politica::name)).toList();
-        }
-        private void exigirNombreLibre(Politica p) {
-            boolean repetido = datos.stream().anyMatch(o -> !o.id().equals(p.id()) && o.projectId().equals(p.projectId())
-                    && o.status() != EstadoPolitica.RETIRED && o.name().equalsIgnoreCase(p.name()));
-            if (repetido && p.status() != EstadoPolitica.RETIRED) throw new ConflictoPoliticaException("nombre");
-        }
+        Politica con = servicio.agregarRegla(P, p.id(), 0, TipoRegla.CLASIFICACION_MINIMA, " CONFIDENCIAL ", "PII sensible");
+        Politica repetida = servicio.agregarRegla(P, p.id(), 1, TipoRegla.CLASIFICACION_MINIMA, "CONFIDENCIAL", "Otra vez");
+
+        assertEquals(1, con.reglas().size());
+        assertEquals("CONFIDENCIAL", con.reglas().getFirst().parametro());
+        assertEquals(con, repetida);
+        assertTrue(versiones.versiones.get(1).estadoJson().contains("CLASIFICACION_MINIMA"));
+
+        Politica sin = servicio.quitarRegla(P, p.id(), 1, con.reglas().getFirst().id(), "Ya no se exige");
+        assertTrue(sin.reglas().isEmpty());
+        assertThrows(RecursoNoEncontradoGobiernoException.class,
+                () -> servicio.quitarRegla(P, p.id(), 2, UUID.randomUUID(), "Regla inexistente"));
+    }
+
+    @Test
+    void parametrosDeReglaInvalidosSeRechazan() {
+        concederTodo();
+        autorizacion.conceder(PermisosGobierno.POLITICAS_REGLAS, P);
+        Politica p = crearPii();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> servicio.agregarRegla(P, p.id(), 0, TipoRegla.CLASIFICACION_MINIMA, null, "Sin parámetro"));
+        assertThrows(IllegalArgumentException.class,
+                () -> servicio.agregarRegla(P, p.id(), 0, TipoRegla.CLASIFICACION_MINIMA, "SECRETO", "Desconocida"));
+        assertThrows(IllegalArgumentException.class,
+                () -> servicio.agregarRegla(P, p.id(), 0, TipoRegla.REQUIERE_RESPONSABLE, "X", "Sobra parámetro"));
+        assertEquals(1, versiones.versiones.size());
     }
 }

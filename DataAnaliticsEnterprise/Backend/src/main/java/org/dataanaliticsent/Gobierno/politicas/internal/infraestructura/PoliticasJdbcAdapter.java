@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,6 +14,8 @@ import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.CategoriaPolitica;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.EstadoPolitica;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.FiltroPoliticas;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.Politica;
+import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.ReglaGobierno;
+import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.TipoRegla;
 import org.dataanaliticsent.Gobierno.politicas.internal.dominio.RepositorioPoliticas;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -20,10 +23,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 class PoliticasJdbcAdapter implements RepositorioPoliticas {
-    /** Activos vigentes de cada política, como arreglo ordenado. */
+    /** Activos vigentes y reglas de cada política, como arreglos alineados y ordenados. */
     private static final String SELECT = """
             SELECT p.*, COALESCE((SELECT array_agg(a.asset_id ORDER BY a.asset_id) FROM gobierno.politica_activo a
-                WHERE a.policy_id=p.id AND a.active), '{}'::uuid[]) AS asset_ids
+                WHERE a.policy_id=p.id AND a.active), '{}'::uuid[]) AS asset_ids,
+              COALESCE((SELECT array_agg(r.id ORDER BY r.created_at, r.id) FROM gobierno.regla_politica r
+                WHERE r.policy_id=p.id), '{}'::uuid[]) AS rule_ids,
+              COALESCE((SELECT array_agg(r.rule_type ORDER BY r.created_at, r.id) FROM gobierno.regla_politica r
+                WHERE r.policy_id=p.id), '{}'::text[]) AS rule_types,
+              COALESCE((SELECT array_agg(r.parameter ORDER BY r.created_at, r.id) FROM gobierno.regla_politica r
+                WHERE r.policy_id=p.id), '{}'::text[]) AS rule_parameters
             FROM gobierno.politica p
             """;
 
@@ -95,6 +104,22 @@ class PoliticasJdbcAdapter implements RepositorioPoliticas {
     }
 
     @Override
+    public void insertarRegla(UUID projectId, UUID policyId, ReglaGobierno regla, UUID actor, Instant instante) {
+        jdbc.sql("""
+                INSERT INTO gobierno.regla_politica(id,policy_id,project_id,rule_type,parameter,created_at,created_by)
+                VALUES(:id,:policy,:project,:type,:parameter,:at,:actor)
+                """).param("id", regla.id()).param("policy", policyId).param("project", projectId)
+                .param("type", regla.tipo().name()).param("parameter", regla.parametro())
+                .param("at", Timestamp.from(instante)).param("actor", actor).update();
+    }
+
+    @Override
+    public void borrarRegla(UUID projectId, UUID policyId, UUID ruleId) {
+        jdbc.sql("DELETE FROM gobierno.regla_politica WHERE id=:id AND policy_id=:policy AND project_id=:project")
+                .param("id", ruleId).param("policy", policyId).param("project", projectId).update();
+    }
+
+    @Override
     public List<Politica> listar(UUID projectId, FiltroPoliticas f, int limite, int desplazamiento) {
         // Columnas fijas; los valores del filtro siempre como parámetros.
         StringBuilder sql = new StringBuilder(SELECT).append(" WHERE p.project_id=:project");
@@ -138,10 +163,17 @@ class PoliticasJdbcAdapter implements RepositorioPoliticas {
 
     private static Politica politica(ResultSet rs) throws SQLException {
         UUID[] activos = (UUID[]) rs.getArray("asset_ids").getArray();
+        UUID[] reglaIds = (UUID[]) rs.getArray("rule_ids").getArray();
+        String[] reglaTipos = (String[]) rs.getArray("rule_types").getArray();
+        String[] reglaParametros = (String[]) rs.getArray("rule_parameters").getArray();
+        List<ReglaGobierno> reglas = new ArrayList<>();
+        for (int i = 0; i < reglaIds.length; i++) {
+            reglas.add(new ReglaGobierno(reglaIds[i], TipoRegla.valueOf(reglaTipos[i]), reglaParametros[i]));
+        }
         return new Politica(rs.getObject("id", UUID.class), rs.getObject("project_id", UUID.class),
                 rs.getString("name"), rs.getString("description"), CategoriaPolitica.valueOf(rs.getString("category")),
                 rs.getObject("owner_id", UUID.class), EstadoPolitica.valueOf(rs.getString("status")),
-                rs.getLong("revision"), rs.getObject("current_version_id", UUID.class), List.of(activos),
+                rs.getLong("revision"), rs.getObject("current_version_id", UUID.class), List.of(activos), reglas,
                 rs.getObject("created_at", OffsetDateTime.class).toInstant(), rs.getObject("created_by", UUID.class),
                 rs.getObject("updated_at", OffsetDateTime.class).toInstant());
     }

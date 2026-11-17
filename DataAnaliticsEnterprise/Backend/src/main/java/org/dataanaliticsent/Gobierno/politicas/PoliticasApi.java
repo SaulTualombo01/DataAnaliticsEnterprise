@@ -19,10 +19,18 @@ public interface PoliticasApi {
 
     enum CategoriaPolitica { CLASIFICACION, PRIVACIDAD, RETENCION, CALIDAD, ACCESO, OTRA }
 
+    /**
+     * Condición verificable sobre los metadatos de gobierno de un activo. Solo
+     * CLASIFICACION_MINIMA lleva parámetro: el nombre de una FichasGobiernoApi.Clasificacion.
+     */
+    enum TipoRegla { REQUIERE_RESPONSABLE, REQUIERE_CLASIFICACION, CLASIFICACION_MINIMA, CALIDAD_APROBADA }
+
+    record ReglaGobierno(UUID id, TipoRegla tipo, String parametro) { }
+
     record Politica(UUID id, UUID projectId, String name, String description, CategoriaPolitica category,
             UUID ownerId, EstadoPolitica status, long revision, UUID currentVersionId, List<UUID> assetIds,
-            Instant createdAt, UUID createdBy, Instant updatedAt) {
-        public Politica { assetIds = List.copyOf(assetIds); }
+            List<ReglaGobierno> reglas, Instant createdAt, UUID createdBy, Instant updatedAt) {
+        public Politica { assetIds = List.copyOf(assetIds); reglas = List.copyOf(reglas); }
     }
 
     record NuevaPolitica(UUID projectId, String name, String description, CategoriaPolitica category, UUID ownerId) {
@@ -64,6 +72,12 @@ public interface PoliticasApi {
 
     /** Exige m3.policies.assets.manage. */
     Politica retirarActivo(UUID projectId, UUID policyId, long expectedRevision, UUID assetId, String reason);
+
+    /** Exige m3.policies.rules.manage. Añadir una regla igual a una existente no hace nada. */
+    Politica agregarRegla(UUID projectId, UUID policyId, long expectedRevision, TipoRegla tipo, String parametro, String reason);
+
+    /** Exige m3.policies.rules.manage. */
+    Politica quitarRegla(UUID projectId, UUID policyId, long expectedRevision, UUID ruleId, String reason);
 
     /** Exige m3.policies.read. Políticas asociadas al activo, indicando cuáles aplican. */
     List<PoliticaAplicable> politicasDeActivo(UUID projectId, UUID assetId);

@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.FiltroPoliticas;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.Politica;
+import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.ReglaGobierno;
 
 public interface RepositorioPoliticas {
     /** Incluye los activos asociados vigentes. */
@@ -20,6 +21,10 @@ public interface RepositorioPoliticas {
     void asociarActivo(UUID projectId, UUID policyId, UUID assetId, UUID actor, Instant instante);
 
     void retirarActivo(UUID projectId, UUID policyId, UUID assetId, UUID actor, Instant instante);
+
+    void insertarRegla(UUID projectId, UUID policyId, ReglaGobierno regla, UUID actor, Instant instante);
+
+    void borrarRegla(UUID projectId, UUID policyId, UUID ruleId);
 
     List<Politica> listar(UUID projectId, FiltroPoliticas filtro, int limite, int desplazamiento);
 

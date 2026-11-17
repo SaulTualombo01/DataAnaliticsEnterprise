@@ -17,6 +17,8 @@ verificada, nunca de los argumentos.
 | `cambiarEstado(proyecto, política, revisión, estado, motivo)` | `m3.policies.lifecycle` | Transición del ciclo de vida |
 | `asociarActivo(proyecto, política, revisión, activo, motivo)` | `m3.policies.assets.manage` | Asocia un activo del catálogo |
 | `retirarActivo(proyecto, política, revisión, activo, motivo)` | `m3.policies.assets.manage` | Quita la asociación |
+| `agregarRegla(proyecto, política, revisión, tipo, parámetro, motivo)` | `m3.policies.rules.manage` | Añade una regla verificable (ver `Cumplimiento.md`) |
+| `quitarRegla(proyecto, política, revisión, regla, motivo)` | `m3.policies.rules.manage` | Quita una regla |
 | `politicasDeActivo(proyecto, activo)` | `m3.policies.read` | Políticas asociadas y si aplican (`ACTIVE`) |
 
 ## Ciclo de vida
@@ -52,8 +54,9 @@ Cada cambio efectivo, en una sola transacción:
 1. Registra un evento `SUCCESS` con `resource_type = gobierno.politica` y la acción:
    `m3.policies.create`, `m3.policies.update`, `m3.policies.lifecycle` (detalles `from`/`to`),
    `m3.policies.assets.add` o `m3.policies.assets.remove` (detalle `asset_id`).
-2. Crea una versión con el estado: nombre, descripción, categoría, responsable, estado y lista
-   ordenada de activos. Así el historial muestra también qué activos tenía en cada momento.
+2. Crea una versión con el estado: nombre, descripción, categoría, responsable, estado, lista
+   ordenada de activos y reglas (desde la fase 3). Así el historial muestra también qué activos
+   y reglas tenía en cada momento.
 3. Guarda la política con la nueva revisión y su `current_version_id`.
 
 Si algo falla, no queda nada a medias. Un intento de cambio **sin permiso** se audita como

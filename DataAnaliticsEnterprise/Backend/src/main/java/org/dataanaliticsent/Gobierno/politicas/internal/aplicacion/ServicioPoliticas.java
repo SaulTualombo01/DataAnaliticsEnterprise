@@ -73,7 +73,7 @@ public class ServicioPoliticas implements PoliticasApi {
             Instant ahora = ahora();
             UUID id = UUID.randomUUID();
             Politica borrador = new Politica(id, nueva.projectId(), nombre, descripcion, nueva.category(), nueva.ownerId(),
-                    EstadoPolitica.DRAFT, 0, null, List.of(), ahora, actor, ahora);
+                    EstadoPolitica.DRAFT, 0, null, List.of(), List.of(), ahora, actor, ahora);
             UUID evento = registrar(actor, borrador, "m3.policies.create",
                     Map.of("name", nombre, "category", nueva.category()));
             ResultadoVersion v = versionado.versionar(new SolicitudVersion(nueva.projectId(), TIPO, id,
@@ -121,7 +121,7 @@ public class ServicioPoliticas implements PoliticasApi {
                     descripcion == null ? actual.description() : descripcion,
                     cambios.category() == null ? actual.category() : cambios.category(),
                     cambios.ownerId() == null ? actual.ownerId() : cambios.ownerId(),
-                    actual.status(), actual.revision(), actual.currentVersionId(), actual.assetIds(),
+                    actual.status(), actual.revision(), actual.currentVersionId(), actual.assetIds(), actual.reglas(),
                     actual.createdAt(), actual.createdBy(), actual.updatedAt());
             return guardarCambio(actor, actual, nueva, "m3.policies.update", Map.of(), motivo);
         });
@@ -185,6 +185,53 @@ public class ServicioPoliticas implements PoliticasApi {
     }
 
     @Override
+    public Politica agregarRegla(UUID projectId, UUID policyId, long expectedRevision, TipoRegla tipo, String parametro,
+            String reason) {
+        Objects.requireNonNull(tipo, "tipo de regla obligatorio");
+        String param = ReglasPolitica.parametro(tipo, parametro);
+        String motivo = ReglasPolitica.motivo(reason);
+        UUID actor = identidad.actorActual();
+        autorizarCambio(actor, PermisosGobierno.POLITICAS_REGLAS, projectId, "m3.policies.rules.add", policyId);
+        return transacciones.ejecutar(() -> {
+            Politica actual = vigente(projectId, policyId, expectedRevision);
+            ReglasPolitica.exigirEditable(actual);
+            boolean existe = actual.reglas().stream().anyMatch(r -> r.tipo() == tipo && Objects.equals(r.parametro(), param));
+            if (existe) return actual;
+            ReglaGobierno regla = new ReglaGobierno(UUID.randomUUID(), tipo, param);
+            List<ReglaGobierno> reglas = new ArrayList<>(actual.reglas());
+            reglas.add(regla);
+            Map<String, Object> detalles = new java.util.LinkedHashMap<>();
+            detalles.put("rule_id", regla.id());
+            detalles.put("type", tipo);
+            detalles.put("parameter", param);
+            Politica guardada = guardarCambio(actor, actual, conReglas(actual, reglas), "m3.policies.rules.add",
+                    detalles, motivo);
+            repositorio.insertarRegla(projectId, policyId, regla, actor, guardada.updatedAt());
+            return guardada;
+        });
+    }
+
+    @Override
+    public Politica quitarRegla(UUID projectId, UUID policyId, long expectedRevision, UUID ruleId, String reason) {
+        Objects.requireNonNull(ruleId, "ruleId obligatorio");
+        String motivo = ReglasPolitica.motivo(reason);
+        UUID actor = identidad.actorActual();
+        autorizarCambio(actor, PermisosGobierno.POLITICAS_REGLAS, projectId, "m3.policies.rules.remove", policyId);
+        return transacciones.ejecutar(() -> {
+            Politica actual = vigente(projectId, policyId, expectedRevision);
+            ReglasPolitica.exigirEditable(actual);
+            List<ReglaGobierno> reglas = new ArrayList<>(actual.reglas());
+            if (!reglas.removeIf(r -> r.id().equals(ruleId))) {
+                throw new RecursoNoEncontradoGobiernoException("Regla no disponible en la política");
+            }
+            Politica guardada = guardarCambio(actor, actual, conReglas(actual, reglas), "m3.policies.rules.remove",
+                    Map.of("rule_id", ruleId), motivo);
+            repositorio.borrarRegla(projectId, policyId, ruleId);
+            return guardada;
+        });
+    }
+
+    @Override
     public List<PoliticaAplicable> politicasDeActivo(UUID projectId, UUID assetId) {
         Objects.requireNonNull(assetId, "assetId obligatorio");
         autorizarLectura(projectId);
@@ -203,7 +250,7 @@ public class ServicioPoliticas implements PoliticasApi {
                 Previa.de(actual.currentVersionId())));
         Politica nueva = new Politica(propuesta.id(), propuesta.projectId(), propuesta.name(), propuesta.description(),
                 propuesta.category(), propuesta.ownerId(), propuesta.status(), actual.revision() + 1, v.versionId(),
-                propuesta.assetIds(), actual.createdAt(), actual.createdBy(), ahora);
+                propuesta.assetIds(), propuesta.reglas(), actual.createdAt(), actual.createdBy(), ahora);
         repositorio.actualizar(nueva, actual.revision());
         return nueva;
     }
@@ -242,16 +289,21 @@ public class ServicioPoliticas implements PoliticasApi {
 
     private static Politica conVersion(Politica p, UUID versionId) {
         return new Politica(p.id(), p.projectId(), p.name(), p.description(), p.category(), p.ownerId(), p.status(),
-                p.revision(), versionId, p.assetIds(), p.createdAt(), p.createdBy(), p.updatedAt());
+                p.revision(), versionId, p.assetIds(), p.reglas(), p.createdAt(), p.createdBy(), p.updatedAt());
     }
 
     private static Politica conEstado(Politica p, EstadoPolitica estado) {
         return new Politica(p.id(), p.projectId(), p.name(), p.description(), p.category(), p.ownerId(), estado,
-                p.revision(), p.currentVersionId(), p.assetIds(), p.createdAt(), p.createdBy(), p.updatedAt());
+                p.revision(), p.currentVersionId(), p.assetIds(), p.reglas(), p.createdAt(), p.createdBy(), p.updatedAt());
     }
 
     private static Politica conActivos(Politica p, List<UUID> activos) {
         return new Politica(p.id(), p.projectId(), p.name(), p.description(), p.category(), p.ownerId(), p.status(),
-                p.revision(), p.currentVersionId(), activos, p.createdAt(), p.createdBy(), p.updatedAt());
+                p.revision(), p.currentVersionId(), activos, p.reglas(), p.createdAt(), p.createdBy(), p.updatedAt());
+    }
+
+    private static Politica conReglas(Politica p, List<ReglaGobierno> reglas) {
+        return new Politica(p.id(), p.projectId(), p.name(), p.description(), p.category(), p.ownerId(), p.status(),
+                p.revision(), p.currentVersionId(), p.assetIds(), reglas, p.createdAt(), p.createdBy(), p.updatedAt());
     }
 }

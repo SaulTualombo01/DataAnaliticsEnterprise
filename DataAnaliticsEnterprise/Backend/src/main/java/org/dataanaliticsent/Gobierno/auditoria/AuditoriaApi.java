@@ -42,7 +42,9 @@ public interface AuditoriaApi {
             Objects.requireNonNull(resourceType, "resourceType obligatorio");
             Objects.requireNonNull(action, "action obligatoria");
             Objects.requireNonNull(outcome, "outcome obligatorio");
-            safeDetails = safeDetails == null ? Map.of() : Map.copyOf(safeDetails);
+            // Copia inmutable que admite valores null (un dato "sin definir" es información válida).
+            safeDetails = safeDetails == null ? Map.of()
+                    : java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(safeDetails));
         }
     }
 

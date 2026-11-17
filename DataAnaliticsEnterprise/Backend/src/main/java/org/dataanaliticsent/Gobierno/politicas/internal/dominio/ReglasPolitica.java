@@ -1,5 +1,6 @@
 package org.dataanaliticsent.Gobierno.politicas.internal.dominio;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,7 +8,10 @@ import java.util.Set;
 import java.util.UUID;
 import org.dataanaliticsent.Gobierno.politicas.ConflictoPoliticaException;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.EstadoPolitica;
+import org.dataanaliticsent.Gobierno.fichas.FichasGobiernoApi.Clasificacion;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.Politica;
+import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.ReglaGobierno;
+import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.TipoRegla;
 
 /** Reglas de negocio de una política, independientes de la base de datos y de Spring. */
 public final class ReglasPolitica {
@@ -77,6 +81,32 @@ public final class ReglasPolitica {
         estado.put("status", p.status());
         List<String> activos = p.assetIds().stream().map(UUID::toString).sorted().toList();
         estado.put("asset_ids", activos);
+        List<Map<String, Object>> reglas = p.reglas().stream()
+                .sorted(Comparator.comparing((ReglaGobierno r) -> r.tipo().name())
+                        .thenComparing(r -> r.parametro() == null ? "" : r.parametro()))
+                .map(r -> {
+                    Map<String, Object> regla = new LinkedHashMap<>();
+                    regla.put("id", r.id());
+                    regla.put("type", r.tipo());
+                    regla.put("parameter", r.parametro());
+                    return regla;
+                }).toList();
+        estado.put("rules", reglas);
         return estado;
+    }
+
+    /** CLASIFICACION_MINIMA exige una clasificación válida; los demás tipos no llevan parámetro. */
+    public static String parametro(TipoRegla tipo, String parametro) {
+        String limpio = parametro == null || parametro.isBlank() ? null : parametro.strip();
+        if (tipo == TipoRegla.CLASIFICACION_MINIMA) {
+            if (limpio == null) throw new IllegalArgumentException("CLASIFICACION_MINIMA exige una clasificación");
+            try {
+                return Clasificacion.valueOf(limpio).name();
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Clasificación desconocida: " + limpio);
+            }
+        }
+        if (limpio != null) throw new IllegalArgumentException(tipo + " no admite parámetro");
+        return null;
     }
 }

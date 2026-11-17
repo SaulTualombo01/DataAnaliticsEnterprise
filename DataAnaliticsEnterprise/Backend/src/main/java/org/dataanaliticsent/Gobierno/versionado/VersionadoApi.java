@@ -39,7 +39,8 @@ public interface VersionadoApi {
                 throw new IllegalArgumentException("reason obligatoria de 1 a 500 caracteres");
             }
             Objects.requireNonNull(estado, "estado obligatorio");
-            estado = Map.copyOf(estado);
+            // Copia inmutable que admite valores null (un dato "sin definir" es parte del estado).
+            estado = java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(estado));
         }
     }
 
