@@ -76,5 +76,5 @@ Activos y proyecto son UUID sin FK, porque esas tablas no existen en esta rama.
 
 - `ServicioLinajeTests` (7): alta sin duplicar, ciclos y auto-relación, activo inexistente,
   grafo de orígenes con distancias, profundidad y dirección, retiro y permisos.
-- `LinajePostgresTests` (etiqueta `postgres`, no ejecutadas aún): V33, bloqueo, ciclos y retiro
+- `LinajePostgresTests` (etiqueta `postgres`, aprobadas en PostgreSQL 18.7 el 2026-11-17; ver `PruebasPostgres.md`): V33, bloqueo, ciclos y retiro
   en PostgreSQL real.

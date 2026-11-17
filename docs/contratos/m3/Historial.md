@@ -59,5 +59,5 @@ separado. El activo debe existir en el catálogo de M1.
 - `ServicioVersionadoTests`: 1 prueba nueva de comparación.
 - `ServicioHistorialTests` (4): resumen completo, secciones sin permiso, permisos y activo
   inexistente, cronología.
-- `HistorialPostgresTests` (etiqueta `postgres`, no ejecutadas aún): búsqueda en `jsonb` de la
+- `HistorialPostgresTests` (etiqueta `postgres`, aprobadas en PostgreSQL 18.7 el 2026-11-17; ver `PruebasPostgres.md`): búsqueda en `jsonb` de la
   cronología y comparación de versiones leídas de PostgreSQL.

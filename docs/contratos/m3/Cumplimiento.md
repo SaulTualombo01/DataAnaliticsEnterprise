@@ -105,4 +105,4 @@ las fases anteriores.
   calidad de M2, auditoría, permiso denegado, activo inexistente y versiones de la ficha.
 - `ServicioPoliticasTests`: 2 pruebas nuevas de reglas.
 - `ResultadosJsonTests` (1): el detalle se guarda y se lee igual en JSON.
-- `CumplimientoPostgresTests` (etiqueta `postgres`, no ejecutadas aún): V32 real e inmutabilidad.
+- `CumplimientoPostgresTests` (etiqueta `postgres`, aprobadas en PostgreSQL 18.7 el 2026-11-17; ver `PruebasPostgres.md`): V32 real e inmutabilidad.

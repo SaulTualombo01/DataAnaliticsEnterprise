@@ -93,5 +93,5 @@ de las pruebas.
 - `ServicioPoliticasTests` (10, sin base de datos): alta, denegación auditada, validaciones,
   sin cambios efectivos, revisión obsoleta, nombre único, transiciones, asociación idempotente,
   aplicabilidad y búsqueda.
-- `PoliticasPostgresTests` (etiqueta `postgres`, no ejecutadas aún): ciclo completo, unicidad,
+- `PoliticasPostgresTests` (etiqueta `postgres`, aprobadas en PostgreSQL 18.7 el 2026-11-17; ver `PruebasPostgres.md`): ciclo completo, unicidad,
   reversión de la transacción y búsqueda con `%` literal.
