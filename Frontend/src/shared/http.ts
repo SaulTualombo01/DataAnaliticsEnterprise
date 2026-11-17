@@ -1,18 +1,8 @@
+import { createPlatformClient } from '../platform/client';
 import type { Asset, Envelope, FieldPage, Gateway, Profile } from './contracts';
 
-export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-export class ApiError extends Error {
-  constructor(public status: number, public code = '', public requestId?: string) {
-    super(status === 401 ? 'La sesión terminó. Inicia sesión para continuar.'
-      : status === 403 ? 'Tu cuenta no tiene permiso para esta operación.'
-      : status === 404 ? 'El activo no está disponible en este proyecto.'
-      : status === 422 ? 'Revisa los identificadores del proyecto y del activo.'
-      : status === 429 ? 'Hay demasiados intentos. Espera antes de volver a intentarlo.'
-      : 'No se pudo completar la solicitud. Vuelve a intentarlo.');
-  }
-}
-export function message(error: unknown): string { return error instanceof ApiError ? error.message : 'No se pudo conectar. Comprueba la conexión y vuelve a intentarlo.'; }
-export const aborted = (error: unknown) => error instanceof DOMException && error.name === 'AbortError';
+import { aborted, ApiError, UUID } from './errors';
+export { aborted, ApiError, UUID, message } from './errors';
 
 export function createHttpGateway(fetcher: typeof fetch = fetch): Gateway {
   async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -41,6 +31,14 @@ export function createHttpGateway(fetcher: typeof fetch = fetch): Gateway {
     return `/api/v1/projects/${project}/assets/${asset}`;
   }
   const api: Gateway = {
+    platform: createPlatformClient({
+      get: (path, signal) => request(path,{signal}),
+      async write(method,path,body,signal) {
+        const headers=await csrf();
+        if(signal?.aborted) throw new DOMException('Aborted','AbortError');
+        return request(path,{method,signal,headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      },
+    }),
     async profile(signal) {
       const result = await request<Envelope<Profile>>('/api/v1/auth/me', { signal });
       if (!UUID.test(result.data?.id ?? '') || typeof result.data.display_name !== 'string' || typeof result.data.email !== 'string') throw new ApiError(502, 'INVALID_RESPONSE');

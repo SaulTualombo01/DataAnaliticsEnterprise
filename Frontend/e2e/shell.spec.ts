@@ -53,6 +53,9 @@ test('login real usa los endpoints del contrato y limpia la contraseña del form
       posts.push(route.request().postData() || ''); expect(route.request().headers()['x-csrf-token']).toBe('synthetic-csrf'); logged = true;
       return route.fulfill({ json: { data: { authenticated: true, user_id: requestId }, meta: { request_id: requestId } } });
     }
+    if (logged && path.endsWith('/administration')) return route.fulfill({ json: { data: { platform_permissions: [], companies: [], selected_organization: null, organization_permissions: [] }, meta: { request_id: requestId } } });
+    if (logged && path.endsWith('/context')) return route.fulfill({ status: 404, json: { status: 404 } });
+    if (logged && path.endsWith('/contexts')) return route.fulfill({ json: { data: [], meta: { request_id: requestId, page_info: { page: 1, page_size: 25, returned_count: 0, has_next: false } } } });
     if (logged) return route.fulfill({ json: { data: { id: requestId, email: 'empleado@example.test', display_name: 'Empleado de prueba' }, meta: { request_id: requestId } } });
     return route.fulfill({ status: 401, json: { status: 401 } });
   });
@@ -60,7 +63,7 @@ test('login real usa los endpoints del contrato y limpia la contraseña del form
   await page.getByLabel('Correo electrónico').fill('empleado@example.test');
   await page.getByLabel('Contraseña', { exact: true }).fill('synthetic-test-password');
   await page.getByRole('button', { name: 'Iniciar sesión' }).click();
-  await expect(page.getByRole('heading', { name: 'Abrir un activo autorizado' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tus proyectos' })).toBeVisible();
   expect(posts).toHaveLength(1);
   expect([...new URLSearchParams(posts[0]).keys()]).toEqual(['email', 'password']);
   expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }))).toEqual({ local: 0, session: 0 });

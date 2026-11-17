@@ -253,3 +253,11 @@ alcances explícitos e historial de revocaciones. Los proyectos archivados
 permiten únicamente las lecturas autorizadas. Incluye capacidades administrativas
 y contexto de trabajo para el futuro frontend TC-10. Migración aditiva V6.
 Ver [contratos y reglas](docs/contratos/TC08_TC09.md).
+
+## Interfaz administrativa TC-10
+
+La interfaz real incorpora acceso, activación, administración empresarial,
+proyectos, cuentas, invitaciones, membresías y roles con alcances.
+Ver [TC-10](docs/contratos/TC10.md) y [Frontend](Frontend/README.md).
+El modo demo sigue siendo explícito. La integración del catálogo M1 requiere
+su backend; M2/M3/M4 conservan espacios pendientes.

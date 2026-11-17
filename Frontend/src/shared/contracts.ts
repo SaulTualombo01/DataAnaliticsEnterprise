@@ -1,3 +1,4 @@
+import type { PlatformClient } from '../platform/client';
 export type Profile = { id: string; email: string; display_name: string };
 export type Context = { organization_id: string; organization_name: string; project_id: string; project_name: string; role_label: string; asset_id?: string };
 export type Asset = {
@@ -16,6 +17,7 @@ export type FieldPage = { data: Field[]; meta: { request_id: string; page_info: 
 export type Envelope<T> = { data: T; meta: { request_id: string } };
 export type DemoScenario = 'normal' | 'empty' | 'denied' | 'unavailable' | 'expired';
 export interface Gateway {
+  platform?: PlatformClient;
   profile(signal?: AbortSignal): Promise<Profile>;
   login(email: string, password: string): Promise<Profile>;
   logout(): Promise<void>;

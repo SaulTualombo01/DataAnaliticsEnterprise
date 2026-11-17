@@ -1,6 +1,7 @@
 # Interfaz compartida de DataAnalitics Enterprise
 
-Contenedor React/TypeScript del monolito modular, entrega Q1 (TC-03/TC-05).
+Contenedor React/TypeScript del monolito modular: base Q1 (TC-03/TC-05) y
+administración/contexto reales de Q2 (TC-10).
 El frontend se construye y sirve por separado; no es otro backend y no agrega
 una autenticación distinta de la sesión del tronco común.
 
@@ -42,15 +43,22 @@ de la demostración no demuestra que estén implementados administrativamente.
 4. Login usa GET CSRF, POST formulario email/password, GET CSRF renovado y GET me.
    Logout obtiene CSRF y usa el endpoint existente. Cookie HttpOnly administrada
    por el navegador; no se guardan contraseñas, tokens o cookies en web storage.
-5. Abrir un activo con IDs de proyecto/activo. Para consultar catálogo real, el
+5. Seleccionar un proyecto propio en Mis proyectos y abrir un activo con su ID. Para consultar catálogo real, el
    backend debe incluir las operaciones de M1-04 (la rama TC sola no las contiene).
    Cada solicitud exige los permisos y alcances del servidor. Escribir IDs no
    incorpora al usuario al proyecto ni le concede acceso.
 
-La lista/selección real de contextos y la administración de cuentas, proyectos,
-membresías, roles e invitaciones corresponden a Q2. /me no devuelve roles y la
-interfaz no los inventa para cuentas reales. La página no asume acceso universal
-del administrador ni elimina controles de Spring Security.
+TC-10 integra la selección real de contextos y la administración de empresas,
+cuentas, proyectos, membresías, roles, alcances e invitaciones. La navegación
+se habilita con capacidades del servidor; /me no devuelve roles y la interfaz
+no los inventa. Cada petición conserva la autorización de Spring Security.
+La selección administrativa de proyecto se mantiene separada de la de trabajo.
+
+Las invitaciones manuales requieren INVITATION_MANUAL_DELIVERY_ENABLED=true en
+el backend local; está deshabilitado por defecto. El código se entrega una sola
+vez, enmascarado y sin guardarlo en web storage ni URL. La activación no inicia
+sesión ni asigna funciones. No hay SMTP ni recuperación de contraseña en TC-10.
+[TC-10](../docs/contratos/TC10.md) detalla operaciones, límites y contratos.
 
 En producción servir dist y /api bajo un mismo origen HTTPS, mediante el
 despliegue que acuerde el equipo. Vite dev/preview no son servidores de producción.
@@ -58,7 +66,8 @@ Este incremento no cambia el backend para servir estáticos ni habilita CORS.
 
 ## Estructura y contribución de otros módulos
 
-- `src/shell`: layout, sesión, navegación y selección de recurso.
+- `src/shell`: selección del modo real/demo; DemoApp conserva la base Q1.
+- `src/platform`: sesión real, administración, proyectos propios, roles y formularios.
 - `src/modules/registry.ts`: etiquetas y registro de áreas M1–M4.
 - `src/modules/catalogo`: lector de activo/diccionario mediante el gateway.
 - `src/shared`: DTOs y cliente HTTP común.
@@ -83,7 +92,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Las pruebas de navegador levantan dos servidores locales en 4173/4174 y los
+Las cinco pruebas ordinarias de navegador levantan dos servidores locales en 4173/4174 y los
 detienen al acabar. El modo real se prueba con respuestas HTTP interceptadas:
 comprueba el comportamiento del cliente, no sustituye las pruebas PostgreSQL,
 cookie/CSRF reales y RBAC del backend. No envía credenciales a un servidor real.
@@ -99,3 +108,13 @@ en GitHub después de publicar los archivos; no se ejecutó remotamente al crear
 El mismo workflow incluye validación de contratos y pruebas del mock TC13,
 documentado en ../docs/contratos/tc13/TC13.md. Este mock no participa en la sesión
 real del frontend ni demuestra autorización de contenido.
+
+## Recorrido con API y PostgreSQL reales
+
+Desde la raíz del repositorio, ejecutar `python tools/verificar_tc10.py`.
+Requiere npm ci previo, JDK24, Maven, PostgreSQL18 y Chromium/Chrome/Edge.
+Prepara base/puertos/cuentas sintéticos propios, arranca JAR y Vite y los detiene
+al finalizar. No usa una base existente ni intercepta la API. La prueba está en
+e2e-real/tc10.spec.ts; test:e2e:real por sí solo requiere las variables que
+prepara el verificador. Evidencias sanitizadas en una carpeta temporal y en
+test-results. Este recorrido local complementa la CI ordinaria, no la sustituye.

@@ -111,3 +111,65 @@ td { font-size: .9rem; }
   .notice { padding: 1.5rem; } .footer { padding: 1rem; flex-direction: column; gap: .25rem; } .login-panel { padding: 1.7rem; }
 }
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+
+/* TC-10: continuar el sistema visual de la plataforma, con controles nativos. */
+.real-shell { min-height:100vh; }
+fieldset { min-width:0; border:0; padding:0; margin:0; }
+textarea { font:inherit; color:inherit; background:white; border:1px solid #8da6b7; border-radius:4px; padding:.65rem .75rem; width:100%; resize:vertical; }
+input[type=radio],input[type=checkbox] { width:1.1rem; min-height:1.1rem; accent-color:#08717b; }
+.form-field { margin:.85rem 0; min-width:0; }
+.form-field small,.form-help { display:block; color:#526676; font-size:.85rem; line-height:1.5; margin:.4rem 0 0; }
+.admin-section { background:white; border:1px solid #c9dae3; padding:1.25rem; margin-top:1rem; min-width:0; }
+.admin-section > .table-scroll { margin:0 -1.25rem; }
+.section-toolbar,.company-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; }
+.section-toolbar h2,.company-heading h2 { margin:0; }
+.company-heading { border-bottom:1px solid #c9dae3; padding-bottom:1rem; margin-top:1rem; }
+.company-heading h2 { font-family:Bahnschrift,"Segoe UI",sans-serif; font-size:1.7rem; overflow-wrap:anywhere; }
+.subnav { display:flex; flex-wrap:wrap; gap:.5rem; margin:1rem 0; overflow:visible; }
+.subnav button[aria-current=page] { border-color:#08717b; background:#e2f0f1; color:#075e67; box-shadow:inset 0 -2px #08717b; }
+.row-actions { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; }
+.row-actions button { font-size:.85rem; padding:.5rem .7rem; }
+.cell-detail { display:block; color:#526676; font-size:.83rem; font-weight:400; margin:.3rem 0; overflow-wrap:anywhere; }
+.identifier { display:block; max-width:38ch; margin:.3rem 0; font-size:.73rem; color:#526676; font-weight:400; overflow-wrap:anywhere; }
+.success-note,.warning-note { padding:.85rem 1rem; border-left:3px solid #08717b; background:#e6f4ed; color:#204d3b; margin-bottom:1rem; overflow-wrap:anywhere; }
+.warning-note { background:#fff4dc; border-left-color:#9a6300; color:#624715; }
+.status-inactive,.status-revoked { background:#f4e6e8; color:#872b3c; }
+.status-archived,.status-expired { background:#fff1ce; color:#6e511a; }
+.status-pending { background:#e7eef8; color:#294f7c; }
+.danger { background:#9a293a; border-color:#9a293a; }
+.danger:hover:not(:disabled) { background:#7e2030; }
+button.danger-text { color:#9a293a; border-color:#bf8790; }
+.loading-line { padding:1rem; color:#526676; }
+.inline-notice { padding:1rem; border:1px solid #c9dae3; background:#f5f9fb; margin:.75rem 0; overflow-wrap:anywhere; }
+.inline-notice p:last-child { margin-bottom:0; }
+.dialog { width:min(720px,calc(100vw - 2rem)); max-height:calc(100dvh - 2rem); overflow:auto; border:1px solid #9cb3c1; border-top:4px solid #08717b; border-radius:6px; padding:1.5rem; color:#213b4c; }
+.dialog::backdrop { background:rgba(16,42,62,.5); }
+.dialog-heading h2 { font-size:1.45rem; margin-bottom:1rem; }
+.dialog label,.dialog .reference { overflow-wrap:anywhere; }
+.dialog .table-scroll { max-height:45vh; }
+.form-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:.65rem; padding-top:1rem; margin-top:1rem; border-top:1px solid #d3e0e7; }
+.user-picker .pagination,.project-picker .pagination { padding:.5rem 0; }
+.project-picker { max-width:600px; margin-bottom:1rem; }
+.scope-editor { border:1px solid #c9dae3; padding:1rem; margin-top:1rem; }
+.scope-editor legend { font-weight:600; padding:0 .4rem; }
+.choice { display:flex; gap:.6rem; align-items:center; font-weight:400; }
+.scope-row { display:grid; grid-template-columns:1fr 2fr auto; align-items:end; gap:.65rem; margin-bottom:.8rem; }
+.scope-row label { font-size:.85rem; }
+.scope-list { padding-left:1.2rem; font-size:.83rem; font-weight:400; }
+.link-button { border:0; background:transparent; color:#08717b; padding:.5rem 0; text-decoration:underline; font-weight:500; }
+.link-button:hover:not(:disabled) { background:transparent; color:#065e66; }
+.login-panel fieldset { display:grid; gap:.3rem; }
+.login-panel .form-field { margin:.3rem 0; }
+.error-text p { margin:.6rem 0; }
+.real-shell .topbar strong { overflow-wrap:anywhere; }
+@media(max-width:1050px) { .real-shell .topbar { align-items:flex-start; }.real-shell .account { flex-wrap:wrap; justify-content:flex-end; max-width:52%; } }
+@media(max-width:700px) {
+  .real-shell .topbar { flex-direction:column; }.real-shell .topbar > div:first-child { max-width:100%; }.real-shell .account { max-width:100%; justify-content:flex-start; }
+  .admin-section { padding:1rem; }.admin-section > .table-scroll { margin:0 -1rem; }
+  .subnav { overflow-x:auto; flex-wrap:nowrap; padding-bottom:.5rem; }.subnav button { flex-shrink:0; }
+  .dialog { padding:1rem; }.scope-row { grid-template-columns:1fr; }.scope-row button { justify-self:start; }
+  .section-toolbar > button { width:100%; }.row-actions { align-items:flex-start; }.row-actions button { white-space:normal; }
+}
+
+.retained-view[hidden] { display:none; }
