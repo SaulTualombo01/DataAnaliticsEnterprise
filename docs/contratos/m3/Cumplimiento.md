@@ -85,18 +85,18 @@ Migración `V32__gobierno_cumplimiento.sql`:
 ## Sustitutos temporales
 
 `CalidadSinModulo2` responde que no hay resultado de calidad, así que `CALIDAD_APROBADA`
-queda `INDETERMINATE` hasta integrar M2. Identidad, autorización y catálogo siguen como en
-las fases anteriores.
+queda `INDETERMINATE` hasta integrar M2. `CatalogoSinModulo1` sigue simulando el catálogo.
+Identidad y autorización ya son las reales del tronco común.
 
 ## Pendiente al integrar
 
 1. Adaptador de `PuertoCalidad` sobre la API de M2 (estado de aprobación del activo).
-2. Alta de los permisos `m3.policies.rules.manage`, `m3.asset_profiles.*` y `m3.compliance.*`.
-   Según la matriz de roles, `m3.compliance.read` también va a Gestor de catálogo, Calidad y
-   Analista de negocio.
-3. Que `owner_id` de la ficha sea un usuario con membresía en el proyecto.
-4. Reevaluar automáticamente cuando cambie una política, una ficha o la calidad; por ahora la
+2. Que `owner_id` de la ficha sea un usuario con membresía en el proyecto.
+3. Reevaluar automáticamente cuando cambie una política, una ficha o la calidad; por ahora la
    evaluación es bajo demanda.
+
+Los permisos ya están dados de alta en `V34`. `m3.compliance.read` también se concedió a Gestor de
+catálogo, Calidad y Analista de negocio, según la matriz de roles.
 
 ## Pruebas
 

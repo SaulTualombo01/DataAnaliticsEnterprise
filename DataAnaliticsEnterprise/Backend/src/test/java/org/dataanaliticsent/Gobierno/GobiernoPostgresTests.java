@@ -103,4 +103,27 @@ class GobiernoPostgresTests {
         assertThrows(DataAccessException.class, () -> jdbc.sql(
                 "DELETE FROM gobierno.evento_auditoria WHERE id=:id").param("id", id).update());
     }
+
+    /** V34 en el catálogo RBAC común: gobierno tiene todo, los demás roles solo lecturas, el administrador nada. */
+    @Test
+    void permisosM3EnElCatalogoComun() {
+        assertEquals(14L, jdbc.sql("SELECT count(*) FROM autorizacion.permiso WHERE code LIKE 'm3.%' AND operation_scope='PROJECT'")
+                .query(Long.class).single());
+        assertEquals(14L, contarPermisosM3("RESPONSABLE_GOBIERNO"));
+        assertEquals(4L, contarPermisosM3("ANALISTA_NEGOCIO"));
+        assertEquals(0L, contarPermisosM3("ADMIN_SISTEMA"));
+        assertEquals(0L, jdbc.sql("""
+                SELECT count(*) FROM autorizacion.rol_permiso rp
+                JOIN autorizacion.rol r ON r.id=rp.role_id JOIN autorizacion.permiso p ON p.id=rp.permission_id
+                WHERE r.code<>'RESPONSABLE_GOBIERNO' AND p.code LIKE 'm3.%' AND p.code NOT LIKE '%.read'
+                """).query(Long.class).single());
+    }
+
+    private long contarPermisosM3(String rol) {
+        return jdbc.sql("""
+                SELECT count(*) FROM autorizacion.rol_permiso rp
+                JOIN autorizacion.rol r ON r.id=rp.role_id JOIN autorizacion.permiso p ON p.id=rp.permission_id
+                WHERE r.code=:rol AND p.code LIKE 'm3.%'
+                """).param("rol", rol).query(Long.class).single();
+    }
 }

@@ -2,8 +2,8 @@ package org.dataanaliticsent.Gobierno.comun;
 
 /**
  * Códigos de permiso de M3, con el formato del catálogo RBAC del tronco común.
- * Pendiente al integrar: darlos de alta en autorizacion.permiso y asignarlos al rol
- * RESPONSABLE_GOBIERNO (esa tabla no existe en esta rama).
+ * Dados de alta en V34__gobierno_permisos.sql (ContratoPermisosTests comprueba que coincidan);
+ * RESPONSABLE_GOBIERNO recibe todos y los demás roles funcionales solo sus lecturas.
  */
 public final class PermisosGobierno {
     public static final String AUDITORIA_LEER = "m3.audit.read";

@@ -70,21 +70,20 @@ Las de `Convenciones_API_JSON_Schema_IDs_Errores` y `Decisiones_Contratos_v1` de
 - Valores de enumeración tal como están en el código (por ejemplo `PRIVACIDAD`, `ORIGENES`), para
   que contrato y código usen los mismos nombres.
 
-## Seguridad en esta rama
+## Seguridad
 
-La rama no integra el tronco común, así que la identidad y la autorización son los sustitutos
-que **niegan todo**. En la aplicación real todas las rutas de M3 responden 403 hasta integrar. Las
-pruebas HTTP (`GobiernoHttpTests`) usan una identidad de prueba solo dentro de la prueba. No se
-añadió ninguna configuración de seguridad propia, para no chocar con la de David.
+Seguridad real del tronco común: sesión `TICSESSION`, CSRF en las escrituras y permisos `m3.*` por
+proyecto (`V34`). Sin sesión, la respuesta es 401 `AUTHENTICATION_REQUIRED`; sin el permiso, 403
+`ACCESS_DENIED`; sin CSRF en una escritura, 403 `CSRF_INVALID`.
+
+Las rutas de M3 se abrieron con sesión en `SeguridadWebConfig` del tronco, un cambio de un solo
+bloque (ver `IntegracionTroncoComun.md`). `GobiernoHttpTests` sigue usando una identidad de prueba
+sin base de datos; `GobiernoSeguridadPostgresTests` prueba las mismas rutas con usuarios reales.
 
 ## Pendiente al integrar
 
-1. **David** (`SeguridadWebConfig` del tronco): permitir con sesión las rutas de M3 antes de
-   `anyRequest().denyAll()`, igual que se hizo con M4.
-2. Usar la correlación del tronco (`ProblemasHttp`, `CorrelacionHttpFilter`) en lugar del
+1. Usar la correlación del tronco (`ProblemasHttp`, `CorrelacionHttpFilter`) en lugar del
    `request_id` propio de `RespuestasGobierno`, y pasarlo a los eventos de auditoría.
-3. Que una sesión ausente o vencida responda 401 (`IdentidadNoVerificadaException` del tronco);
-   hoy el sustituto responde 403.
 
 ## Pruebas
 

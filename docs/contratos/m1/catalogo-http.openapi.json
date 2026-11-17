@@ -1,0 +1,806 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "M1 consultas HTTP implementadas",
+    "version": "1.0.0",
+    "description": "Base técnica de intercambio M1 adoptada por David el 13-11-2026. Detalle y campos implementados, con sesión TICSESSION. No incluye CRUD, listado de fuentes ni lectura de contenido TC13. La aceptación de otros responsables no se presume."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "sessionCookie": []
+    }
+  ],
+  "paths": {
+    "/projects/{project_id}/assets/{asset_id}": {
+      "get": {
+        "operationId": "getAsset",
+        "tags": [
+          "Catálogo"
+        ],
+        "summary": "Consultar el activo y su versión vigente de metadatos",
+        "description": "Consulta implementada con TICSESSION y RBAC vigente. Campos ligados a una versión del mismo activo; historial requiere permiso adicional. Sin datos empresariales ni credenciales.",
+        "x-requirements": [
+          "RI1.1",
+          "RI1.2",
+          "RI2.1",
+          "RF4.1"
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "description": "Proyecto autorizado; el servidor deriva y verifica su organización.",
+            "schema": {
+              "$ref": "#/components/schemas/Identifier"
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "description": "Activo autorizado que pertenece al proyecto de la ruta.",
+            "schema": {
+              "$ref": "#/components/schemas/Identifier"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta completada",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión requerida",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acción no permitida",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso/versión no disponible en el ámbito",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetros inválidos",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno seguro",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependencia no disponible",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "x-implementation-status": "implemented"
+      }
+    },
+    "/projects/{project_id}/assets/{asset_id}/fields": {
+      "get": {
+        "operationId": "listAssetFields",
+        "tags": [
+          "Catálogo"
+        ],
+        "summary": "Consultar campos de una versión de metadatos",
+        "description": "Consulta implementada con TICSESSION y RBAC vigente. Campos ligados a una versión del mismo activo; historial requiere permiso adicional. Sin datos empresariales ni credenciales.",
+        "x-requirements": [
+          "RI1.1",
+          "RI1.2",
+          "RI2.1",
+          "RF4.1",
+          "RF3.1"
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "description": "Proyecto autorizado; el servidor deriva y verifica su organización.",
+            "schema": {
+              "$ref": "#/components/schemas/Identifier"
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "description": "Activo autorizado que pertenece al proyecto de la ruta.",
+            "schema": {
+              "$ref": "#/components/schemas/Identifier"
+            }
+          },
+          {
+            "name": "metadata_version_id",
+            "in": "query",
+            "required": true,
+            "description": "Versión de metadatos del mismo activo/contexto; no es snapshot de contenido.",
+            "schema": {
+              "$ref": "#/components/schemas/Identifier"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Página empezando en 1. Fuera de rango se rechaza, no se ajusta silenciosamente.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "maximum": 2147483647
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "25 por defecto, mínimo 1 y máximo 100; valores técnicos iniciales.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Único orden permitido position,id; no se admite SQL ni orden libre.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "position,id"
+              ],
+              "default": "position,id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta completada",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FieldList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión requerida",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acción no permitida",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso/versión no disponible en el ámbito",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetros inválidos",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno seguro",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependencia no disponible",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Correlación UUID que coincide con el cuerpo",
+                "schema": {
+                  "$ref": "#/components/schemas/Identifier"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "x-implementation-status": "implemented"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AssetRead": {
+        "type": "object",
+        "properties": {
+          "source_id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "organization_id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "project_id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "enum": [
+              "table",
+              "csv_dataset",
+              "json_collection",
+              "api_collection"
+            ]
+          },
+          "origin": {
+            "$ref": "#/components/schemas/OriginLocator"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "missing",
+              "retired"
+            ]
+          },
+          "metadata_version_id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "structure_origin": {
+            "enum": [
+              "declared",
+              "inferred"
+            ]
+          },
+          "business_description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2000
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "uniqueItems": true
+          },
+          "last_discovery_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Identifier"
+          }
+        },
+        "required": [
+          "id",
+          "source_id",
+          "organization_id",
+          "project_id",
+          "name",
+          "kind",
+          "origin",
+          "status",
+          "metadata_version_id",
+          "structure_origin",
+          "business_description",
+          "tags",
+          "last_discovery_at",
+          "updated_at"
+        ],
+        "additionalProperties": true
+      },
+      "AssetResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AssetRead"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ResponseMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": true
+      },
+      "FieldList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldRead"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ListMeta"
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": true
+      },
+      "FieldRead": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "metadata_version_id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "native_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "logical_type": {
+            "enum": [
+              "string",
+              "integer",
+              "number",
+              "boolean",
+              "date",
+              "datetime",
+              "object",
+              "array",
+              "mixed",
+              "unknown"
+            ]
+          },
+          "nullable": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "business_description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2000
+          },
+          "id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "organization_id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "project_id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "missing"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "asset_id",
+          "metadata_version_id",
+          "name",
+          "path",
+          "position",
+          "native_type",
+          "logical_type",
+          "nullable",
+          "business_description",
+          "organization_id",
+          "project_id",
+          "status"
+        ],
+        "additionalProperties": true
+      },
+      "Identifier": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^[0-9a-f-]{36}$"
+      },
+      "ListMeta": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseMeta"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "page_info": {
+                "$ref": "#/components/schemas/PageInfo"
+              }
+            },
+            "required": [
+              "page_info"
+            ]
+          }
+        ]
+      },
+      "OriginLocator": {
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "object_path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "namespace",
+          "object_path"
+        ],
+        "additionalProperties": true
+      },
+      "PageInfo": {
+        "type": "object",
+        "required": [
+          "page",
+          "page_size",
+          "returned_count",
+          "has_next"
+        ],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "returned_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "has_next": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Problem": {
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "instance",
+          "code",
+          "request_id"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 400,
+            "maximum": 599
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1
+          },
+          "instance": {
+            "type": "string",
+            "format": "uri"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "request_id": {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          "errors": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "location",
+                "field",
+                "code",
+                "message"
+              ],
+              "properties": {
+                "location": {
+                  "enum": [
+                    "body",
+                    "query",
+                    "path"
+                  ]
+                },
+                "field": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "ResponseMeta": {
+        "type": "object",
+        "required": [
+          "request_id"
+        ],
+        "properties": {
+          "request_id": {
+            "$ref": "#/components/schemas/Identifier"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "pattern": "Z$"
+      },
+      "ValidationProblem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Problem"
+          },
+          {
+            "type": "object",
+            "required": [
+              "errors"
+            ],
+            "properties": {
+              "status": {
+                "const": 422
+              },
+              "code": {
+                "const": "VALIDATION_ERROR"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "TICSESSION"
+      }
+    }
+  },
+  "x-contract-status": "technical-baseline"
+}

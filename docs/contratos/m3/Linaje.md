@@ -65,12 +65,13 @@ Activos y proyecto son UUID sin FK, porque esas tablas no existen en esta rama.
 
 ## Pendiente al integrar
 
-1. Alta de `m3.lineage.read` y `m3.lineage.manage`. Según la matriz de roles, `read` también va
-   a Gestor de catálogo, Calidad y Analista de negocio.
-2. Registrar linaje automáticamente desde los eventos de la plataforma: lectura de TC13 →
+1. Registrar linaje automáticamente desde los eventos de la plataforma: lectura de TC13 →
    evaluación de M2 o KPI de M4 → reporte. Se haría con los `read_id` del esquema de Marcelo
    (`tc13_snapshots`), una vez acordado con él.
-3. Linaje a nivel de columna: fuera del alcance actual, que es por activo.
+2. Linaje a nivel de columna: fuera del alcance actual, que es por activo.
+
+`m3.lineage.read` y `m3.lineage.manage` ya están en `V34`; `read` también lo tienen Gestor de
+catálogo, Calidad y Analista de negocio.
 
 ## Pruebas
 

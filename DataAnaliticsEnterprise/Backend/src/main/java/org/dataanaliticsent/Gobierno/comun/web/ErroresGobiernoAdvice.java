@@ -9,6 +9,7 @@ import org.dataanaliticsent.Gobierno.comun.RevisionObsoletaException;
 import org.dataanaliticsent.Gobierno.linaje.ConflictoLinajeException;
 import org.dataanaliticsent.Gobierno.politicas.ConflictoPoliticaException;
 import org.dataanaliticsent.Gobierno.versionado.ConflictoVersionException;
+import org.dataanaliticsent.TroncoComun.identidad.IdentidadNoVerificadaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
@@ -62,6 +63,12 @@ public class ErroresGobiernoAdvice {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     ResponseEntity<Map<String, Object>> metodo(HttpRequestMethodNotSupportedException e) {
         return problema(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", "La ruta no admite ese método.", List.of());
+    }
+
+    /** Sin sesión verificada del tronco común (ausente, vencida o revocada). */
+    @ExceptionHandler(IdentidadNoVerificadaException.class)
+    ResponseEntity<Map<String, Object>> sinSesion(IdentidadNoVerificadaException e) {
+        return problema(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_REQUIRED", "Inicia sesión para continuar.", List.of());
     }
 
     @ExceptionHandler(AccesoDenegadoGobiernoException.class)
@@ -119,6 +126,7 @@ public class ErroresGobiernoAdvice {
     private static String titulo(HttpStatus estado) {
         return switch (estado.value()) {
             case 400 -> "Solicitud inválida";
+            case 401 -> "Autenticación requerida";
             case 403 -> "Acceso denegado";
             case 404 -> "Recurso no disponible";
             case 405 -> "Método no permitido";

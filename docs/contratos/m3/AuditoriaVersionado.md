@@ -74,23 +74,24 @@ Proyecto, organización, actor y recurso son UUID **sin clave foránea**, porque
 no existen en esta rama. M3 no crea tablas de TC13: las lecturas y capturas pertenecen a la
 migración V7 de Marcelo (rama `tc13_snapshots`).
 
-## Sustitutos temporales
+## Identidad y autorización
 
-Identidad y autorización vienen del tronco común, que esta rama no tiene. Mientras tanto:
+Desde la integración con el tronco común (ver `IntegracionTroncoComun.md`):
 
-- `IdentidadSinTroncoComun` y `AutorizacionSinTroncoComun` **niegan todo**. Las consultas
-  de auditoría e historial devuelven `AccesoDenegadoGobiernoException` hasta integrar.
-- Las pruebas usan dobles que conceden permisos de forma explícita.
+- `IdentidadTroncoComun` toma el actor de la sesión verificada (`IdentidadActualApi`). Sin
+  sesión, la respuesta es 401.
+- `AutorizacionTroncoComun` evalúa cada permiso `m3.*` con `AutorizacionApi` en ámbito PROJECT.
+  Comprueba cuenta activa, membresía vigente, rol y proyecto activo; en un proyecto archivado
+  solo se permiten lecturas. No hay caché de privilegios.
+- Los permisos se dan de alta en `V34__gobierno_permisos.sql`.
+- Las pruebas sin base de datos siguen usando dobles que conceden permisos de forma explícita.
 
 ## Pendiente al integrar con el tronco común
 
-1. Reemplazar los dos sustitutos por adaptadores sobre `IdentidadActualApi` y `AutorizacionApi`.
-2. Dar de alta `m3.audit.read` y `m3.history.read` en `autorizacion.permiso` y asignarlos al
-   rol `RESPONSABLE_GOBIERNO`.
-3. Decidir con el equipo: usar `auditoria.evento` y `versionado.version_recurso` del tronco
+1. Decidir con el equipo: usar `auditoria.evento` y `versionado.version_recurso` del tronco
    (añadiéndoles `organization_id`) o conservar las tablas de M3 y migrar los datos.
-4. Renumerar la migración si el equipo acuerda otro esquema de versiones de Flyway.
-5. Que identidad, contexto y catálogo registren mediante `AuditoriaApi` y `VersionadoApi`
+2. Renumerar las migraciones V30–V34 si el equipo acuerda otro esquema de versiones de Flyway.
+3. Que identidad, contexto y catálogo registren mediante `AuditoriaApi` y `VersionadoApi`
    en lugar de SQL directo (cambio de cada dueño).
 
 ## Pruebas

@@ -74,19 +74,20 @@ Proyecto, responsable y activo son UUID sin FK, porque esas tablas no existen en
 
 ## Sustitutos temporales
 
-Además de identidad y autorización (ver `AuditoriaVersionado.md`), `CatalogoSinModulo1`
-responde que ningún activo existe. Hasta integrar M1 no se puede asociar ningún activo fuera
-de las pruebas.
+Solo queda `CatalogoSinModulo1`, que responde que ningún activo existe. Hasta integrar M1 no se
+puede asociar ningún activo fuera de las pruebas. Identidad y autorización ya son las reales del
+tronco común.
 
 ## Pendiente al integrar
 
 1. Adaptador de `PuertoCatalogo` sobre `CatalogoApi` de M1.
-2. Alta de los cinco permisos `m3.policies.*` y asignación al rol `RESPONSABLE_GOBIERNO`;
-   `m3.policies.read` también a los roles que deban consultar políticas.
-3. Comprobar que `owner_id` sea un usuario con membresía en el proyecto.
-4. Políticas de ámbito organización (ruta `/organizations/{id}/governance-policies` de las
+2. Comprobar que `owner_id` sea un usuario con membresía en el proyecto.
+3. Políticas de ámbito organización (ruta `/organizations/{id}/governance-policies` de las
    convenciones): por ahora todas son de proyecto.
-5. Rutas HTTP y correlación (`request_id`) del tronco común.
+4. Correlación (`request_id`) del tronco común en los eventos de auditoría.
+
+Los permisos `m3.policies.*` ya están en `V34`. `m3.policies.read` también lo tienen Gestor de
+catálogo, Calidad y Analista de negocio.
 
 ## Pruebas
 
