@@ -78,7 +78,7 @@ class PoliticasPostgresTests {
 
         assertThrows(ConflictoPoliticaException.class, () -> crear(proyecto, "RETENCIÓN".toLowerCase()));
         politicas.actualizar(proyecto, p.id(), 0, new CambiosPolitica(null, "v2", null, null), "Cambio");
-        assertThrows(ConflictoPoliticaException.class,
+        assertThrows(org.dataanaliticsent.Gobierno.comun.RevisionObsoletaException.class,
                 () -> politicas.actualizar(proyecto, p.id(), 0, new CambiosPolitica(null, "v3", null, null), "Viejo"));
     }
 

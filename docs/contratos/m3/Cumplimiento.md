@@ -36,7 +36,7 @@ permisos y la responsabilidad de negocio y clasificación formal asignada a M3 e
 - Una ficha por activo y proyecto. Responsable (`owner_id`) y clasificación pueden quedar sin
   definir (`null`).
 - Clasificación de menor a mayor sensibilidad: `PUBLICA < INTERNA < CONFIDENCIAL < RESTRINGIDA`.
-- Crear exige `expectedRevision = null`; editar exige la revisión leída. Si no coincide, 409.
+- Crear exige `expectedRevision = null`; editar exige la revisión leída. Si no coincide, `RevisionObsoletaException` (412).
 - Solo se crea para activos que el catálogo de M1 confirma.
 - Cada cambio efectivo se audita (`m3.asset_profiles.update`) y crea una versión
   (`resource_type = gobierno.ficha_activo`, `resource_id = asset_id`). Sin cambios no hace nada.

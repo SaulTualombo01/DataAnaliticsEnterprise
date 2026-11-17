@@ -1,0 +1,74 @@
+{
+  "$comment": "Ejemplos sintéticos de M3 para mocks (por ejemplo, los de M4). Misma forma que producen JsonGobierno y ErroresGobiernoAdvice; IDs ficticios.",
+  "GET /api/v1/projects/{project_id}/assets/{asset_id}/compliance — 200": {
+    "data": {
+      "id": "6d1c7c2e-0b7a-4c8e-9a51-3f2b6c1d0e01",
+      "project_id": "b19b98b7-e715-42ca-b5af-02d665db48ad",
+      "asset_id": "f7c83e25-073f-4ddb-b72b-e4669d242d37",
+      "status": "NON_COMPLIANT",
+      "evaluated_at": "2026-11-17T15:30:00Z",
+      "evaluated_by": "00000000-0000-4000-8000-000000000001",
+      "profile_version_id": "8660c613-f093-4a39-a5ed-a84f64fef022",
+      "audit_event_id": "0f9276de-1a8d-42d3-8f89-2d93361f039e",
+      "policies": [
+        {
+          "policy_id": "22222222-2222-4222-8222-222222222222",
+          "policy_name": "Datos personales protegidos",
+          "policy_version_id": "33333333-3333-4333-8333-333333333333",
+          "status": "NON_COMPLIANT",
+          "reason": null,
+          "rules": [
+            { "rule_id": "44444444-4444-4444-8444-444444444441", "type": "REQUIERE_RESPONSABLE", "parameter": null, "status": "COMPLIANT", "reason": "CUMPLE" },
+            { "rule_id": "44444444-4444-4444-8444-444444444442", "type": "CLASIFICACION_MINIMA", "parameter": "CONFIDENCIAL", "status": "NON_COMPLIANT", "reason": "CLASIFICACION_INSUFICIENTE" }
+          ]
+        }
+      ]
+    },
+    "meta": { "request_id": "1c739cc5-a7e6-4485-9b17-e2d8481909eb" }
+  },
+  "GET /api/v1/projects/{project_id}/assets/{asset_id}/compliance — 200 sin políticas": {
+    "data": {
+      "id": "6d1c7c2e-0b7a-4c8e-9a51-3f2b6c1d0e02",
+      "project_id": "b19b98b7-e715-42ca-b5af-02d665db48ad",
+      "asset_id": "f7c83e25-073f-4ddb-b72b-e4669d242d37",
+      "status": "NOT_APPLICABLE",
+      "evaluated_at": "2026-11-17T15:31:00Z",
+      "evaluated_by": "00000000-0000-4000-8000-000000000001",
+      "profile_version_id": null,
+      "audit_event_id": "0f9276de-1a8d-42d3-8f89-2d93361f0400",
+      "policies": []
+    },
+    "meta": { "request_id": "1c739cc5-a7e6-4485-9b17-e2d8481909ec" }
+  },
+  "GET /api/v1/projects/{project_id}/assets/{asset_id}/compliance — 404 nunca evaluado": {
+    "type": "about:blank",
+    "title": "Recurso no disponible",
+    "status": 404,
+    "detail": "El activo todavía no tiene evaluaciones",
+    "instance": "urn:request:a2ba11e2-6577-4e54-bcdc-a3e5ff41c748",
+    "code": "RESOURCE_NOT_FOUND",
+    "request_id": "a2ba11e2-6577-4e54-bcdc-a3e5ff41c748"
+  },
+  "PATCH /api/v1/projects/{project_id}/governance-policies/{policy_id} — 412 revisión obsoleta": {
+    "type": "about:blank",
+    "title": "Revisión obsoleta",
+    "status": 412,
+    "detail": "La política cambió desde la revisión 0; vuelva a consultarla",
+    "instance": "urn:request:a2ba11e2-6577-4e54-bcdc-a3e5ff41c749",
+    "code": "PRECONDITION_FAILED",
+    "request_id": "a2ba11e2-6577-4e54-bcdc-a3e5ff41c749"
+  },
+  "POST /api/v1/projects/{project_id}/governance-policies — 422 validación": {
+    "type": "about:blank",
+    "title": "Parámetros inválidos",
+    "status": 422,
+    "detail": "Revise los campos indicados.",
+    "instance": "urn:request:a2ba11e2-6577-4e54-bcdc-a3e5ff41c750",
+    "code": "VALIDATION_ERROR",
+    "request_id": "a2ba11e2-6577-4e54-bcdc-a3e5ff41c750",
+    "errors": [
+      { "location": "body", "field": "/name", "code": "REQUIRED", "message": "Campo obligatorio" },
+      { "location": "body", "field": "/category", "code": "ENUM", "message": "Valor no admitido: INVENTADA" }
+    ]
+  }
+}

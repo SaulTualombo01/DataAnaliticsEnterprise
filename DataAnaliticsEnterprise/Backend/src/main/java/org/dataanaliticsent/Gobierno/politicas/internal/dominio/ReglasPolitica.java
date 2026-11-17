@@ -67,7 +67,7 @@ public final class ReglasPolitica {
 
     public static void exigirRevision(Politica politica, long esperada) {
         if (politica.revision() != esperada) {
-            throw new ConflictoPoliticaException("La política cambió desde la revisión " + esperada + "; vuelva a consultarla");
+            throw new org.dataanaliticsent.Gobierno.comun.RevisionObsoletaException("La política cambió desde la revisión " + esperada + "; vuelva a consultarla");
         }
     }
 

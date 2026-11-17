@@ -17,7 +17,7 @@ import org.dataanaliticsent.Gobierno.auditoria.internal.dominio.RepositorioAudit
 import org.dataanaliticsent.Gobierno.versionado.internal.dominio.RepositorioVersiones;
 import org.dataanaliticsent.Gobierno.cumplimiento.CumplimientoApi.Evaluacion;
 import org.dataanaliticsent.Gobierno.cumplimiento.internal.dominio.RepositorioEvaluaciones;
-import org.dataanaliticsent.Gobierno.fichas.ConflictoFichaException;
+import org.dataanaliticsent.Gobierno.comun.RevisionObsoletaException;
 import org.dataanaliticsent.Gobierno.fichas.FichasGobiernoApi.Ficha;
 import org.dataanaliticsent.Gobierno.fichas.internal.dominio.RepositorioFichas;
 import org.dataanaliticsent.Gobierno.politicas.ConflictoPoliticaException;
@@ -86,7 +86,7 @@ public final class DoblesGobierno {
         @Override public void insertar(Politica p) { exigirNombreLibre(p); datos.add(p); }
         @Override public void actualizar(Politica p, long revisionLeida) {
             Politica actual = buscar(p.projectId(), p.id()).orElseThrow();
-            if (actual.revision() != revisionLeida) throw new ConflictoPoliticaException("revisión");
+            if (actual.revision() != revisionLeida) throw new RevisionObsoletaException("revisión");
             exigirNombreLibre(p);
             datos.set(datos.indexOf(actual), p);
         }
@@ -120,7 +120,7 @@ public final class DoblesGobierno {
         @Override public void guardar(Ficha ficha, Long revisionLeida) {
             Optional<Ficha> actual = buscar(ficha.projectId(), ficha.assetId());
             if (!java.util.Objects.equals(actual.map(Ficha::revision).orElse(null), revisionLeida)) {
-                throw new ConflictoFichaException("revisión");
+                throw new RevisionObsoletaException("revisión");
             }
             actual.ifPresent(datos::remove);
             datos.add(ficha);

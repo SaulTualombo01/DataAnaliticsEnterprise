@@ -80,7 +80,7 @@ class PoliticasJdbcAdapter implements RepositorioPoliticas {
         } catch (DuplicateKeyException e) {
             throw nombreRepetido();
         }
-        if (filas != 1) throw new ConflictoPoliticaException("La política cambió mientras se guardaba; vuelva a consultarla");
+        if (filas != 1) throw new org.dataanaliticsent.Gobierno.comun.RevisionObsoletaException("La política cambió mientras se guardaba; vuelva a consultarla");
     }
 
     @Override

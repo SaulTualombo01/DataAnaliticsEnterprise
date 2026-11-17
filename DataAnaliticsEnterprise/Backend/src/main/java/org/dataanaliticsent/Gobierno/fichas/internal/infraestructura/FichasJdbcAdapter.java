@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import org.dataanaliticsent.Gobierno.fichas.ConflictoFichaException;
+import org.dataanaliticsent.Gobierno.comun.RevisionObsoletaException;
 import org.dataanaliticsent.Gobierno.fichas.FichasGobiernoApi.Clasificacion;
 import org.dataanaliticsent.Gobierno.fichas.FichasGobiernoApi.Ficha;
 import org.dataanaliticsent.Gobierno.fichas.internal.dominio.RepositorioFichas;
@@ -44,7 +44,7 @@ class FichasJdbcAdapter implements RepositorioFichas {
                         .param("version", f.currentVersionId()).param("at", Timestamp.from(f.updatedAt()))
                         .param("by", f.updatedBy()).update();
             } catch (DuplicateKeyException e) {
-                throw new ConflictoFichaException("Otra operación creó la ficha; vuelva a consultarla");
+                throw new RevisionObsoletaException("Otra operación creó la ficha; vuelva a consultarla");
             }
             return;
         }
@@ -56,6 +56,6 @@ class FichasJdbcAdapter implements RepositorioFichas {
                 .param("version", f.currentVersionId()).param("at", Timestamp.from(f.updatedAt()))
                 .param("by", f.updatedBy()).param("project", f.projectId()).param("asset", f.assetId())
                 .param("leida", revisionLeida).update();
-        if (filas != 1) throw new ConflictoFichaException("La ficha cambió mientras se guardaba; vuelva a consultarla");
+        if (filas != 1) throw new RevisionObsoletaException("La ficha cambió mientras se guardaba; vuelva a consultarla");
     }
 }

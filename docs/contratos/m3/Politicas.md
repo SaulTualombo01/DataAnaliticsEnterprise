@@ -41,7 +41,7 @@ DRAFT ──► ACTIVE ◄──► INACTIVE
 - **Categorías**: `CLASIFICACION`, `PRIVACIDAD`, `RETENCION`, `CALIDAD`, `ACCESO`, `OTRA`.
 - **Responsable** (`owner_id`) obligatorio.
 - **Concurrencia**: cada edición envía la `revision` que leyó. Si otro usuario la cambió antes,
-  se rechaza con 409 y no se sobrescribe nada. Cada cambio efectivo sube la revisión en 1.
+  se rechaza con `RevisionObsoletaException` (412) y no se sobrescribe nada. Cada cambio efectivo sube la revisión en 1.
 - **Sin cambios efectivos** (mismos valores, activo ya asociado o ya retirado) no se sube la
   revisión ni se crea versión ni evento.
 - **Activos**: solo se asocian activos que el catálogo de M1 confirma en el proyecto. M3 no crea

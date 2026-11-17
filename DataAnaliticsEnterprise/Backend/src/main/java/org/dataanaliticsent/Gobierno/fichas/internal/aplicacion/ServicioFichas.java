@@ -19,7 +19,7 @@ import org.dataanaliticsent.Gobierno.comun.PuertoCatalogo;
 import org.dataanaliticsent.Gobierno.comun.PuertoIdentidad;
 import org.dataanaliticsent.Gobierno.comun.RecursoNoEncontradoGobiernoException;
 import org.dataanaliticsent.Gobierno.comun.Transacciones;
-import org.dataanaliticsent.Gobierno.fichas.ConflictoFichaException;
+import org.dataanaliticsent.Gobierno.comun.RevisionObsoletaException;
 import org.dataanaliticsent.Gobierno.fichas.FichasGobiernoApi;
 import org.dataanaliticsent.Gobierno.fichas.internal.dominio.RepositorioFichas;
 import org.dataanaliticsent.Gobierno.versionado.VersionadoApi;
@@ -86,7 +86,7 @@ public class ServicioFichas implements FichasGobiernoApi {
             Optional<Ficha> actual = repositorio.buscar(d.projectId(), d.assetId());
             Long vigente = actual.map(Ficha::revision).orElse(null);
             if (!Objects.equals(vigente, d.expectedRevision())) {
-                throw new ConflictoFichaException(vigente == null
+                throw new RevisionObsoletaException(vigente == null
                         ? "La ficha no existe; envíe expectedRevision nulo para crearla"
                         : "La ficha cambió desde la revisión leída; vuelva a consultarla");
             }

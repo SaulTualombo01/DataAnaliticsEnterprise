@@ -17,7 +17,7 @@ import org.dataanaliticsent.Gobierno.comun.PuertoCalidad.EstadoCalidad;
 import org.dataanaliticsent.Gobierno.comun.RecursoNoEncontradoGobiernoException;
 import org.dataanaliticsent.Gobierno.cumplimiento.CumplimientoApi.EstadoCumplimiento;
 import org.dataanaliticsent.Gobierno.cumplimiento.CumplimientoApi.Evaluacion;
-import org.dataanaliticsent.Gobierno.fichas.ConflictoFichaException;
+import org.dataanaliticsent.Gobierno.comun.RevisionObsoletaException;
 import org.dataanaliticsent.Gobierno.fichas.FichasGobiernoApi.Clasificacion;
 import org.dataanaliticsent.Gobierno.fichas.FichasGobiernoApi.DatosFicha;
 import org.dataanaliticsent.Gobierno.fichas.FichasGobiernoApi.Ficha;
@@ -156,9 +156,9 @@ class ServicioCumplimientoTests {
 
         assertEquals(v0, igual);
         assertEquals(1, v1.revision());
-        assertThrows(ConflictoFichaException.class,
+        assertThrows(RevisionObsoletaException.class,
                 () -> fichas.guardar(new DatosFicha(P, CLIENTES, 0L, null, null, "Revisión vieja")));
-        assertThrows(ConflictoFichaException.class,
+        assertThrows(RevisionObsoletaException.class,
                 () -> fichas.guardar(new DatosFicha(P, CLIENTES, null, null, null, "Crear de nuevo")));
         assertThrows(RecursoNoEncontradoGobiernoException.class,
                 () -> fichas.guardar(new DatosFicha(P, UUID.randomUUID(), null, RESPONSABLE, null, "Activo inventado")));

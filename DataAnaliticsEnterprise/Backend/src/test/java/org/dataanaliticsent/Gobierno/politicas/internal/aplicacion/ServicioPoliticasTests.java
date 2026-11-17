@@ -110,7 +110,7 @@ class ServicioPoliticasTests {
         Politica p = crearPii();
         servicio.actualizar(P, p.id(), 0, new CambiosPolitica("Nombre A", null, null, null), "Primer cambio");
 
-        assertThrows(ConflictoPoliticaException.class,
+        assertThrows(org.dataanaliticsent.Gobierno.comun.RevisionObsoletaException.class,
                 () -> servicio.actualizar(P, p.id(), 0, new CambiosPolitica("Nombre B", null, null, null), "Cambio viejo"));
         assertEquals("Nombre A", politicas.buscar(P, p.id()).orElseThrow().name());
     }
