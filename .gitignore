@@ -1,0 +1,7 @@
+# Credenciales locales de Compose
+.env
+.env.*
+!.env.example
+
+# IntelliJ IDEA
+.idea/
