@@ -26,6 +26,10 @@ import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.FiltroPoliticas;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.Politica;
 import org.dataanaliticsent.Gobierno.politicas.PoliticasApi.ReglaGobierno;
 import org.dataanaliticsent.Gobierno.politicas.internal.dominio.RepositorioPoliticas;
+import org.dataanaliticsent.Gobierno.linaje.LinajeApi.EstadoRelacion;
+import org.dataanaliticsent.Gobierno.linaje.LinajeApi.Relacion;
+import org.dataanaliticsent.Gobierno.linaje.LinajeApi.TipoRelacion;
+import org.dataanaliticsent.Gobierno.linaje.internal.dominio.RepositorioLinaje;
 
 /** Dobles en memoria para probar los servicios sin PostgreSQL ni tronco común. */
 public final class DoblesGobierno {
@@ -131,6 +135,31 @@ public final class DoblesGobierno {
                     .filter(e -> e.projectId().equals(projectId) && e.assetId().equals(assetId)).toList());
             java.util.Collections.reverse(propias);
             return propias.stream().skip(desplazamiento).limit(limite).toList();
+        }
+    }
+
+    public static final class Linaje implements RepositorioLinaje {
+        public final List<Relacion> datos = new ArrayList<>();
+        @Override public void bloquearProyecto(UUID projectId) { }
+        @Override public Optional<Relacion> buscar(UUID projectId, UUID id) {
+            return datos.stream().filter(r -> r.projectId().equals(projectId) && r.id().equals(id)).findFirst();
+        }
+        @Override public Optional<Relacion> vigenteIgual(UUID p, UUID o, UUID t, TipoRelacion tipo) {
+            return datos.stream().filter(r -> r.projectId().equals(p) && r.originAssetId().equals(o)
+                    && r.targetAssetId().equals(t) && r.tipo() == tipo && r.estado() == EstadoRelacion.ACTIVE).findFirst();
+        }
+        @Override public void insertar(Relacion r) { datos.add(r); }
+        @Override public void retirar(Relacion r) {
+            Relacion actual = buscar(r.projectId(), r.id()).orElseThrow();
+            datos.set(datos.indexOf(actual), r);
+        }
+        @Override public List<Relacion> entrantes(UUID p, java.util.Collection<UUID> activos) {
+            return datos.stream().filter(r -> r.projectId().equals(p) && r.estado() == EstadoRelacion.ACTIVE
+                    && activos.contains(r.targetAssetId())).toList();
+        }
+        @Override public List<Relacion> salientes(UUID p, java.util.Collection<UUID> activos) {
+            return datos.stream().filter(r -> r.projectId().equals(p) && r.estado() == EstadoRelacion.ACTIVE
+                    && activos.contains(r.originAssetId())).toList();
         }
     }
 

@@ -18,6 +18,8 @@ public final class PermisosGobierno {
     public static final String FICHAS_ACTUALIZAR = "m3.asset_profiles.update";
     public static final String CUMPLIMIENTO_LEER = "m3.compliance.read";
     public static final String CUMPLIMIENTO_EVALUAR = "m3.compliance.evaluate";
+    public static final String LINAJE_LEER = "m3.lineage.read";
+    public static final String LINAJE_ADMINISTRAR = "m3.lineage.manage";
 
     private PermisosGobierno() { }
 }
