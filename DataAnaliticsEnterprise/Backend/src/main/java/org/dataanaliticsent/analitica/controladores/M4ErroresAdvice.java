@@ -3,7 +3,7 @@ package org.dataanaliticsent.analitica.controladores;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import org.dataanaliticsent.errores.ProblemasHttp;
+import org.dataanaliticsent.TroncoComun.errores.ProblemasHttp;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;

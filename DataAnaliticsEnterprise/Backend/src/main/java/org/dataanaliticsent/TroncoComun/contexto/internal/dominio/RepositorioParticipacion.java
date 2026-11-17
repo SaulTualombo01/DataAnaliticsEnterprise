@@ -1,0 +1,33 @@
+package org.dataanaliticsent.TroncoComun.contexto.internal.dominio;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.dataanaliticsent.TroncoComun.contexto.ParticipacionApi.*;
+public interface RepositorioParticipacion {
+    void bloquear();
+    boolean empresaActiva(UUID org);
+    boolean usuarioActivo(UUID user);
+    boolean administradorSistema(UUID user);
+    boolean administrador(UUID user);
+    boolean otraEmpresa(UUID user,UUID org);
+    Optional<Proyecto> proyecto(UUID org,UUID id,boolean lock);
+    Proyecto cambiarProyecto(UUID org,UUID id,String name,String status);
+    Optional<MembresiaEmpresa> membresiaEmpresa(UUID org,UUID id);
+    Optional<MembresiaEmpresa> empleado(UUID org,UUID user);
+    List<MembresiaEmpresa> miembrosEmpresa(UUID org,int limit,long offset);
+    void estadoEmpresa(UUID member,String status);
+    Optional<MembresiaProyecto> membresia(UUID org,UUID project,UUID id);
+    Optional<MembresiaProyecto> participante(UUID org,UUID project,UUID user);
+    List<MembresiaProyecto> miembros(UUID org,UUID project,int limit,long offset);
+    MembresiaProyecto incorporar(UUID org,UUID project,UUID user,UUID companyMember,UUID actor);
+    void estadoProyecto(UUID member,String status);
+    List<Rol> roles();
+    Optional<Asignacion> asignacion(UUID project,UUID member,UUID id);
+    Optional<Asignacion> vigente(UUID project,UUID member);
+    Asignacion asignar(UUID project,UUID member,UUID user,String role,List<Alcance> scopes,UUID actor);
+    void revocar(UUID assignment);
+    List<Asignacion> historial(UUID project,UUID member,int limit,long offset);
+    List<Contexto> contextos(UUID user,UUID project,int limit,long offset);
+    List<String> permisosProyecto(UUID user,UUID project);
+    void auditar(UUID actor,UUID org,UUID project,String type,UUID resource,String action,String reason,UUID subject);
+}

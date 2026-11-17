@@ -1,0 +1,1216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tic:participacion-proyectos:1.0.0",
+  "$defs": {
+    "Problem": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "about:blank"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer",
+          "minimum": 400,
+          "maximum": 599
+        },
+        "detail": {
+          "type": "string"
+        },
+        "instance": {
+          "type": "string",
+          "format": "uri"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z_]+$"
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "status",
+        "detail",
+        "instance",
+        "code",
+        "request_id"
+      ],
+      "additionalProperties": false
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254,
+          "description": "Correo ASCII; servidor elimina espacios exteriores y normaliza a minúsculas; local-part máximo64, sin puntos consecutivos o exteriores."
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "\\S"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "display_name",
+        "status",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "AccountDetail": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "#/$defs/User"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807,
+          "description": "Entero JSON sin decimales ni conversión desde texto; obtenido del detalle actual."
+        }
+      },
+      "required": [
+        "account",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "AccountDetailResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/AccountDetail"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "Project": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "organization_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive",
+            "archived"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        }
+      },
+      "required": [
+        "id",
+        "organization_id",
+        "name",
+        "status",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "Scope": {
+      "type": "object",
+      "properties": {
+        "resource_scope": {
+          "enum": [
+            "PROJECT",
+            "SOURCE",
+            "ASSET"
+          ]
+        },
+        "resource_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "resource_scope",
+        "resource_id"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "resource_scope": {
+                "const": "PROJECT"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "resource_id": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "resource_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ScopeRequest": {
+      "type": "object",
+      "properties": {
+        "resource_scope": {
+          "enum": [
+            "PROJECT",
+            "SOURCE",
+            "ASSET"
+          ]
+        },
+        "resource_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "resource_scope"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "resource_scope": {
+                "const": "PROJECT"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "resource_id": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "resource_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              }
+            },
+            "required": [
+              "resource_id"
+            ]
+          }
+        }
+      ]
+    },
+    "ReasonRequest": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "MemberRequest": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "user_id",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "ProjectEditRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "\\S"
+        },
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807,
+          "description": "Entero JSON sin decimales ni conversión desde texto; obtenido del detalle actual."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "name",
+        "expected_revision",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "StateRequest": {
+      "type": "object",
+      "properties": {
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807,
+          "description": "Entero JSON sin decimales ni conversión desde texto; obtenido del detalle actual."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "expected_revision",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "SelectRequest": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        }
+      },
+      "required": [
+        "project_id"
+      ],
+      "additionalProperties": false
+    },
+    "RoleRequest": {
+      "type": "object",
+      "properties": {
+        "role_code": {
+          "enum": [
+            "GESTOR_CATALOGO",
+            "ANALISTA_CALIDAD",
+            "RESPONSABLE_GOBIERNO",
+            "ANALISTA_NEGOCIO"
+          ]
+        },
+        "scopes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ScopeRequest"
+          }
+        },
+        "expected_assignment_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "role_code",
+        "scopes",
+        "expected_assignment_id",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyMember": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "organization_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive"
+          ]
+        },
+        "assigned_by": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "assigned_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        }
+      },
+      "required": [
+        "id",
+        "user_id",
+        "organization_id",
+        "status",
+        "assigned_by",
+        "assigned_at"
+      ],
+      "additionalProperties": false
+    },
+    "Member": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "organization_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive"
+          ]
+        },
+        "assigned_by": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "assigned_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "project_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "current_assignment_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "role_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "GESTOR_CATALOGO",
+                "ANALISTA_CALIDAD",
+                "RESPONSABLE_GOBIERNO",
+                "ANALISTA_NEGOCIO"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "user_id",
+        "organization_id",
+        "status",
+        "assigned_by",
+        "assigned_at",
+        "project_id",
+        "current_assignment_id",
+        "role_code"
+      ],
+      "additionalProperties": false
+    },
+    "Role": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "enum": [
+            "GESTOR_CATALOGO",
+            "ANALISTA_CALIDAD",
+            "RESPONSABLE_GOBIERNO",
+            "ANALISTA_NEGOCIO"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "\\S"
+        },
+        "permissions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          }
+        }
+      },
+      "required": [
+        "code",
+        "name",
+        "permissions"
+      ],
+      "additionalProperties": false
+    },
+    "Assignment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "project_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "membership_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "role_code": {
+          "enum": [
+            "GESTOR_CATALOGO",
+            "ANALISTA_CALIDAD",
+            "RESPONSABLE_GOBIERNO",
+            "ANALISTA_NEGOCIO"
+          ]
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive"
+          ]
+        },
+        "assigned_by": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "assigned_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "revoked_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "Z$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Scope"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "user_id",
+        "project_id",
+        "membership_id",
+        "role_code",
+        "status",
+        "assigned_by",
+        "assigned_at",
+        "revoked_at",
+        "scopes"
+      ],
+      "additionalProperties": false
+    },
+    "ManagedProject": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "$ref": "#/$defs/Project"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807,
+          "description": "Entero JSON sin decimales ni conversión desde texto; obtenido del detalle actual."
+        }
+      },
+      "required": [
+        "project",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "Context": {
+      "type": "object",
+      "properties": {
+        "organization_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "organization_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "\\S"
+        },
+        "project_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "project_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "\\S"
+        },
+        "project_status": {
+          "enum": [
+            "active",
+            "archived"
+          ]
+        },
+        "membership_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "role_code": {
+          "anyOf": [
+            {
+              "enum": [
+                "GESTOR_CATALOGO",
+                "ANALISTA_CALIDAD",
+                "RESPONSABLE_GOBIERNO",
+                "ANALISTA_NEGOCIO"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "organization_id",
+        "organization_name",
+        "project_id",
+        "project_name",
+        "project_status",
+        "membership_id",
+        "role_code"
+      ],
+      "additionalProperties": false
+    },
+    "Permission": {
+      "type": "object",
+      "properties": {
+        "permission": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "scopes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/Scope"
+          }
+        }
+      },
+      "required": [
+        "permission",
+        "scopes"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyMemberResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/CompanyMember"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "MemberResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/Member"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "AssignmentResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/Assignment"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "ManagedProjectResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ManagedProject"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "ContextResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/Context"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyMemberList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/CompanyMember"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "page_info": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "page_size": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "returned_count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "has_next": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "page",
+                "page_size",
+                "returned_count",
+                "has_next"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "request_id",
+            "page_info"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "MemberList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/Member"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "page_info": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "page_size": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "returned_count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "has_next": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "page",
+                "page_size",
+                "returned_count",
+                "has_next"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "request_id",
+            "page_info"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "AssignmentList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "page_info": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "page_size": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "returned_count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "has_next": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "page",
+                "page_size",
+                "returned_count",
+                "has_next"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "request_id",
+            "page_info"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "ContextList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/Context"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "page_info": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "page_size": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "returned_count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "has_next": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "page",
+                "page_size",
+                "returned_count",
+                "has_next"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "request_id",
+            "page_info"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "RoleList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/Role"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "PermissionList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Permission"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

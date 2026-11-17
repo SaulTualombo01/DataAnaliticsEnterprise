@@ -1,0 +1,135 @@
+{
+  "invite_request": {
+    "schema": "InviteRequest",
+    "body": {
+      "email": "empleado@example.test",
+      "display_name": "Empleado de ejemplo",
+      "reason": "Incorporación autorizada"
+    }
+  },
+  "accept_request_synthetic_only": {
+    "schema": "AcceptRequest",
+    "body": {
+      "activation_token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "new_password": "Frase de ejemplo sintetica 2026"
+    }
+  },
+  "delivery_synthetic_only": {
+    "schema": "DeliveryResponse",
+    "body": {
+      "data": {
+        "invitation": {
+          "id": "33333333-3333-4333-8333-333333333333",
+          "organization_id": "22222222-2222-4222-8222-222222222222",
+          "email": "empleado@example.test",
+          "display_name": "Empleado de ejemplo",
+          "invited_by": "11111111-1111-4111-8111-111111111111",
+          "status": "pending",
+          "created_at": "2026-11-14T00:00:00Z",
+          "expires_at": "2026-11-15T00:00:00Z",
+          "accepted_user_id": null
+        },
+        "delivery_mode": "manual",
+        "activation_token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "meta": {
+        "request_id": "11111111-1111-4111-8111-111111111111"
+      }
+    }
+  },
+  "accepted": {
+    "schema": "UserResponse",
+    "body": {
+      "data": {
+        "id": "44444444-4444-4444-8444-444444444444",
+        "email": "empleado@example.test",
+        "display_name": "Empleado de ejemplo",
+        "status": "active",
+        "created_at": "2026-11-14T00:05:00Z"
+      },
+      "meta": {
+        "request_id": "11111111-1111-4111-8111-111111111111"
+      }
+    }
+  },
+  "invitations_empty": {
+    "schema": "InvitationList",
+    "body": {
+      "data": [],
+      "meta": {
+        "request_id": "11111111-1111-4111-8111-111111111111",
+        "page_info": {
+          "page": 1,
+          "page_size": 25,
+          "returned_count": 0,
+          "has_next": false
+        }
+      }
+    }
+  },
+  "users_empty": {
+    "schema": "UserList",
+    "body": {
+      "data": [],
+      "meta": {
+        "request_id": "11111111-1111-4111-8111-111111111111",
+        "page_info": {
+          "page": 1,
+          "page_size": 25,
+          "returned_count": 0,
+          "has_next": false
+        }
+      }
+    }
+  },
+  "invalid_invitation": {
+    "schema": "Problem",
+    "body": {
+      "type": "about:blank",
+      "title": "Parámetros inválidos",
+      "status": 422,
+      "detail": "La invitación no está disponible",
+      "instance": "urn:request:11111111-1111-4111-8111-111111111111",
+      "code": "INVALID_INVITATION",
+      "request_id": "11111111-1111-4111-8111-111111111111"
+    }
+  },
+  "last_admin_conflict": {
+    "schema": "Problem",
+    "body": {
+      "type": "about:blank",
+      "title": "Conflicto",
+      "status": 409,
+      "detail": "La operación requiere revisar el estado actual",
+      "instance": "urn:request:11111111-1111-4111-8111-111111111111",
+      "code": "ACCOUNT_CONFLICT",
+      "request_id": "11111111-1111-4111-8111-111111111111"
+    }
+  },
+  "edit_request": {
+    "schema": "EditRequest",
+    "body": {
+      "display_name": "Nombre corregido",
+      "expected_revision": 0,
+      "reason": "Corrección autorizada"
+    }
+  },
+  "account_detail": {
+    "schema": "AccountDetailResponse",
+    "body": {
+      "data": {
+        "account": {
+          "id": "44444444-4444-4444-8444-444444444444",
+          "email": "empleado@example.test",
+          "display_name": "Empleado de ejemplo",
+          "status": "active",
+          "created_at": "2026-11-14T00:05:00Z"
+        },
+        "revision": 0
+      },
+      "meta": {
+        "request_id": "11111111-1111-4111-8111-111111111111"
+      }
+    }
+  }
+}

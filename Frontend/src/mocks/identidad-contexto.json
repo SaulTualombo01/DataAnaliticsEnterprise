@@ -1,0 +1,25 @@
+{
+  "kind": "mock",
+  "profile": {
+    "id": "00000000-0000-0000-0000-000000000101",
+    "email": "gestor@example.test",
+    "display_name": "Usuario de demostración"
+  },
+  "contexts": [
+    {
+      "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+      "organization_name": "Comercial Andina (demostración)",
+      "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+      "project_name": "Catálogo comercial",
+      "role_label": "Gestor de fuentes y catálogo",
+      "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc"
+    },
+    {
+      "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+      "organization_name": "Comercial Andina (demostración)",
+      "project_id": "00000000-0000-0000-0000-000000000202",
+      "project_name": "Proyecto sin activos",
+      "role_label": "Gestor de fuentes y catálogo"
+    }
+  ]
+}

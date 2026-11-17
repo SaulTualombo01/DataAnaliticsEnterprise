@@ -1,13 +1,12 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { Toaster } from '@/components/ui/toast'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { App } from './shell/App';
+import { createHttpGateway } from './shared/http';
+import './styles.css';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <Toaster>
-      <App />
-    </Toaster>
-  </StrictMode>,
-)
+// Only the explicit demo build imports fixtures. Real failures never fall back to mocks.
+const gateway = import.meta.env.MODE === 'demo' && import.meta.env.VITE_DEMO === 'true'
+  ? (await import('./mocks/gateway')).createDemoGateway()
+  : createHttpGateway();
+
+createRoot(document.getElementById('root')!).render(<React.StrictMode><App gateway={gateway} /></React.StrictMode>);

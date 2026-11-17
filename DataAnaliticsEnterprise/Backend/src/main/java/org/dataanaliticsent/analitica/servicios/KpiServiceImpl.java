@@ -15,9 +15,9 @@ import org.dataanaliticsent.analitica.dto.KpiResult;
 import org.dataanaliticsent.analitica.dto.KpiStatus;
 import org.dataanaliticsent.analitica.dto.Scope;
 import org.dataanaliticsent.analitica.dto.TimeWindow;
-import org.dataanaliticsent.autorizacion.AutorizacionApi;
-import org.dataanaliticsent.autorizacion.SolicitudAcceso;
-import org.dataanaliticsent.identidad.IdentidadActualApi;
+import org.dataanaliticsent.TroncoComun.autorizacion.AutorizacionApi;
+import org.dataanaliticsent.TroncoComun.autorizacion.SolicitudAcceso;
+import org.dataanaliticsent.TroncoComun.identidad.IdentidadActualApi;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 

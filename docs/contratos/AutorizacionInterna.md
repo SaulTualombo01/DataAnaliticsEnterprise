@@ -4,7 +4,7 @@
 
 ## Interfaz pública
 
-Paquete público: `org.dataanaliticsent.autorizacion`.
+Paquete público: `org.dataanaliticsent.TroncoComun.autorizacion`.
 
 | Operación | Uso |
 | --- | --- |

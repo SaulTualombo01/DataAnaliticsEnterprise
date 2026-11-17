@@ -1,23 +1,24 @@
 import { defineConfig, devices } from '@playwright/test'
 
-// 4173 es el puerto que el equipo reserva para pruebas de frontend; 5173 queda libre para desarrollo.
-const PORT = 4173
-const BASE_URL = `http://127.0.0.1:${PORT}`
+// Puertos reservados por el equipo para pruebas: 4173 en modo demostración y 4174 en modo real.
+const DEMO_URL = 'http://127.0.0.1:4173'
+const REAL_URL = 'http://127.0.0.1:4174'
 
 export default defineConfig({
-  testDir: './qa-e2e',
+  // e2e: pruebas del shell compartido. qa-e2e: pruebas de la vista de analítica (M4).
+  testDir: '.',
+  testMatch: ['e2e/**/*.spec.ts', 'qa-e2e/**/*.spec.ts'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: BASE_URL,
+    baseURL: DEMO_URL,
     trace: 'on-first-retry',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: {
-    command: `npm run dev -- --host 127.0.0.1 --port ${PORT} --strictPort`,
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    { command: 'npm run dev:demo -- --port 4173', url: DEMO_URL, reuseExistingServer: !process.env.CI },
+    { command: 'npm run dev -- --port 4174', url: REAL_URL, reuseExistingServer: !process.env.CI },
+  ],
 })

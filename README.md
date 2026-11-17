@@ -1,7 +1,38 @@
 # DataAnaliticsEnterprise
 Página Web que permite el análisis de datos empresariales
 
+## Interfaz web compartida (Q1)
+
+El contenedor React/TypeScript está en [Frontend](Frontend/README.md). Incluye
+navegación para M1–M4, lector de catálogo/diccionario y estados comunes. Desde
+Frontend, ejecutar `npm ci` y `npm run dev:demo` para la demostración explícita,
+o `npm run dev` para utilizar la sesión real y el proxy de API.
+
+La selección real de proyectos y la administración completa pertenecen a Q2.
+Consultar catálogo real requiere el backend de M1-04; la rama TC sola no publica
+esas rutas. Las vistas especializadas M2/M3/M4 siguen pendientes.
+
+[Contenedor y mocks Q1](docs/contratos/ContenedorWebQ1.md) documenta los límites.
+El workflow [.github/workflows/ci.yml](.github/workflows/ci.yml) prepara compilación,
+pruebas y verificación del frontend; su ejecución remota requiere publicar los cambios.
+
+## Contrato y mock TC13 (Q1)
+
+David Valencia es responsable técnico provisional de TC13. La base técnica
+[TC13 1.0.0](docs/contratos/tc13/TC13.md) incluye OpenAPI, JSON Schema, ejemplos y
+un mock local para lecturas acotadas, recibos y capturas sintéticas. La revisión
+de M2/M3/M4 sigue pendiente; no es un servicio de extracción empresarial real.
+Ejecutar `python tools/mock_tc13.py` desde este checkout. El workflow valida
+contratos y prueba el mock además de backend y frontend.
+
 ## Backend Spring Boot
+
+El primer bloque administrativo de Q2 incorpora ADMIN_EMPRESA y el ámbito
+ORGANIZATION: alta/consulta de empresas, designación/revocación por el sistema y
+alta/listado de proyectos dentro de la empresa autorizada. Contrato y límites:
+[Administración empresarial](docs/contratos/AdministracionEmpresa.md). V4 añade
+el sexto rol y seis permisos, sin cambiar las migraciones previas. El CRUD de
+cuentas, invitaciones, membresías/roles funcionales y sus pantallas sigue pendiente.
 
 El backend es un monolito modular con Spring Boot 4.1.2. La clase
 `org.dataanaliticsent.DataAnaliticsEnterprise` inicia la aplicación y detecta
@@ -51,8 +82,9 @@ mvn -f .\DataAnaliticsEnterprise\pom.xml spring-boot:run
 
 El servidor escucha en `http://localhost:8080`. La variable de entorno `PORT`
 permite cambiar el puerto. Detener con `Ctrl+C`.
-Todavía no hay endpoints de negocio ni página de inicio: una petición a `/`
-devuelve HTTP 404 aunque el servicio esté funcionando.
+No hay página de inicio en el backend: una petición a `/` sin sesión devuelve
+HTTP401 aunque el servicio funcione. La interfaz se sirve por separado y las
+operaciones administrativas están documentadas en contexto.openapi.json.
 
 ### Probar y empaquetar
 
@@ -97,17 +129,22 @@ se crean tablas, entidades Java ni adaptadores funcionales de M1.
 
 Los permisos M1 están declarados como operaciones del catálogo común RBAC; no
 implican implementar el módulo ni conceder administración funcional al administrador.
-La autenticación local con sesión/cookie está implementada. Las pantallas y la
-administración completa de usuarios siguen pendientes. El evaluador RBAC interno
+La autenticación local con sesión/cookie y el contenedor web están implementados.
+La administración completa de usuarios sigue pendiente. El evaluador RBAC interno
 se describe en `docs/contratos/AutorizacionInterna.md`.
+
+V4 amplía la autorización a ORGANIZATION mediante designaciones explícitas de
+ADMIN_EMPRESA, sin convertirlas en asignaciones funcionales PROJECT. Las rutas
+administrativas nuevas utilizan tc.company.* y tc.company_administrators.*;
+los permisos de plataforma anteriores se conservan por compatibilidad del catálogo.
 
 ### Autorización interna
 
 Los casos de uso pueden inyectar `AutorizacionApi` para evaluar o exigir un permiso
 vigente. La cuenta, membresías, rol, permiso y alcance se consultan en PostgreSQL
 en cada evaluación, sin conservar privilegios en una caché o token local.
-El UUID del actor debe venir del futuro mecanismo de identidad verificado en
-servidor; esta API no autentica a una persona ni acepta peticiones HTTP.
+El UUID del actor procede de IdentidadActualApi y la identidad verificada en
+servidor; esta API de autorización no autentica a una persona ni acepta peticiones HTTP.
 
 Se distinguen SELF, PLATFORM y PROJECT. El administrador global no hereda acceso
 a proyectos. Las funciones propias usan titularidad; los recursos SOURCE/ASSET
@@ -195,3 +232,24 @@ base dedicada; no se incluye borrado automático de esquemas ni un script destru
 El estado histórico se almacena como representación tipada versión 1 en JSONB.
 Su hash SHA-256 verifica la representación escrita; el comparador semántico para
 decidir cambios en un redescubrimiento se desarrollará con ese caso de uso.
+
+## Estructura Java de M0
+
+Los componentes de M0 y sus pruebas se agrupan bajo `org.dataanaliticsent.TroncoComun`.
+La clase principal permanece en `org.dataanaliticsent`. Ver
+[estructura de M0](docs/Refactor_M0_TroncoComun.md) para imports y compilación limpia.
+
+## Cuentas e invitaciones
+
+Se incorpora la activación por invitación de un solo uso, consulta paginada y
+desactivación de cuentas con RBAC y revocación de accesos. Migración aditiva V5.
+La entrega manual exige INVITATION_MANUAL_DELIVERY_ENABLED=true; no se crean
+contraseñas predeterminadas. Ver [contrato](docs/contratos/CuentasInvitaciones.md).
+
+## Participación empresarial y proyectos
+
+TC-08/09 incorpora pertenencias, membresías, rol funcional único por proyecto,
+alcances explícitos e historial de revocaciones. Los proyectos archivados
+permiten únicamente las lecturas autorizadas. Incluye capacidades administrativas
+y contexto de trabajo para el futuro frontend TC-10. Migración aditiva V6.
+Ver [contratos y reglas](docs/contratos/TC08_TC09.md).

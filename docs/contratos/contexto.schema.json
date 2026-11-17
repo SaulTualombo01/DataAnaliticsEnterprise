@@ -1,0 +1,497 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tic:contexto-administrativo:2.0.0",
+  "$defs": {
+    "CreateRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "\\S"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "name",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "AssignRequest": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "user_id",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "RevokeRequest": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "Organization": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "status",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "Project": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "organization_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive",
+            "archived"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        }
+      },
+      "required": [
+        "id",
+        "organization_id",
+        "name",
+        "status",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "Administrator": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "organization_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "assigned_by": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive"
+          ]
+        },
+        "assigned_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "revoked_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "Z$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "user_id",
+        "organization_id",
+        "assigned_by",
+        "status",
+        "assigned_at",
+        "revoked_at"
+      ],
+      "additionalProperties": false
+    },
+    "Problem": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "about:blank"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer",
+          "minimum": 400,
+          "maximum": 599
+        },
+        "detail": {
+          "type": "string"
+        },
+        "instance": {
+          "type": "string",
+          "format": "uri"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z_]+$"
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "status",
+        "detail",
+        "instance",
+        "code",
+        "request_id"
+      ],
+      "additionalProperties": false
+    },
+    "OrganizationResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/Organization"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "OrganizationList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Organization"
+          },
+          "maxItems": 100
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "page_info": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "page_size": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "returned_count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "has_next": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "page",
+                "page_size",
+                "returned_count",
+                "has_next"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "request_id",
+            "page_info"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "ProjectResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/Project"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "ProjectList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Project"
+          },
+          "maxItems": 100
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "page_info": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "page_size": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "returned_count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "has_next": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "page",
+                "page_size",
+                "returned_count",
+                "has_next"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "request_id",
+            "page_info"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "AdministratorResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/Administrator"
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "required": [
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "AdministratorList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Administrator"
+          },
+          "maxItems": 100
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            },
+            "page_info": {
+              "type": "object",
+              "properties": {
+                "page": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "page_size": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "returned_count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "has_next": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "page",
+                "page_size",
+                "returned_count",
+                "has_next"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "request_id",
+            "page_info"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "data",
+        "meta"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

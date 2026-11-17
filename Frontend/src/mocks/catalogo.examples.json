@@ -1,0 +1,183 @@
+{
+  "asset_ok": {
+    "schema": "AssetResponse",
+    "status": 200,
+    "body": {
+      "data": {
+        "source_id": "a5ab298e-2fc1-5459-af10-c741dcda1635",
+        "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+        "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+        "name": "orders",
+        "kind": "table",
+        "origin": {
+          "namespace": "public",
+          "object_path": "orders"
+        },
+        "status": "active",
+        "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+        "structure_origin": "declared",
+        "business_description": "Pedidos del comercio de ejemplo.",
+        "tags": [
+          "ventas"
+        ],
+        "last_discovery_at": "2026-10-21T15:05:00Z",
+        "updated_at": "2026-10-21T15:05:00Z",
+        "id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc"
+      },
+      "meta": {
+        "request_id": "293a262f-dc54-5c6d-89f5-47cd9f0f5b55"
+      }
+    }
+  },
+  "fields_ok": {
+    "schema": "FieldList",
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+          "name": "order_id",
+          "path": "order_id",
+          "position": 1,
+          "native_type": "integer",
+          "logical_type": "integer",
+          "nullable": false,
+          "business_description": null,
+          "id": "00000000-0000-0000-0000-000000000001",
+          "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "status": "active"
+        },
+        {
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+          "name": "customer_name",
+          "path": "customer_name",
+          "position": 2,
+          "native_type": "text",
+          "logical_type": "string",
+          "nullable": null,
+          "business_description": null,
+          "id": "00000000-0000-0000-0000-000000000002",
+          "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "status": "active"
+        },
+        {
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+          "name": "active",
+          "path": "active",
+          "position": 3,
+          "native_type": "boolean",
+          "logical_type": "boolean",
+          "nullable": null,
+          "business_description": null,
+          "id": "00000000-0000-0000-0000-000000000003",
+          "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "status": "active"
+        }
+      ],
+      "meta": {
+        "request_id": "4471da50-0c76-5fc2-8252-abdf981afc8d",
+        "page_info": {
+          "page": 1,
+          "page_size": 25,
+          "returned_count": 3,
+          "has_next": false
+        }
+      }
+    }
+  },
+  "fields_empty": {
+    "schema": "FieldList",
+    "status": 200,
+    "body": {
+      "data": [],
+      "meta": {
+        "request_id": "4471da50-0c76-5fc2-8252-abdf981afc8d",
+        "page_info": {
+          "page": 1,
+          "page_size": 25,
+          "returned_count": 0,
+          "has_next": false
+        }
+      }
+    }
+  },
+  "unauthenticated": {
+    "schema": "Problem",
+    "status": 401,
+    "body": {
+      "type": "about:blank",
+      "title": "Inicia sesión para continuar",
+      "status": 401,
+      "detail": "Inicia sesión para continuar",
+      "instance": "urn:request:00000000-0000-0000-0000-000000000099",
+      "code": "AUTHENTICATION_REQUIRED",
+      "request_id": "00000000-0000-0000-0000-000000000099"
+    }
+  },
+  "denied": {
+    "schema": "Problem",
+    "status": 403,
+    "body": {
+      "type": "about:blank",
+      "title": "La operación no está autorizada",
+      "status": 403,
+      "detail": "La operación no está autorizada",
+      "instance": "urn:request:00000000-0000-0000-0000-000000000099",
+      "code": "ACCESS_DENIED",
+      "request_id": "00000000-0000-0000-0000-000000000099"
+    }
+  },
+  "not_found": {
+    "schema": "Problem",
+    "status": 404,
+    "body": {
+      "type": "about:blank",
+      "title": "El recurso no está disponible para esta consulta",
+      "status": 404,
+      "detail": "El recurso no está disponible para esta consulta",
+      "instance": "urn:request:00000000-0000-0000-0000-000000000099",
+      "code": "RESOURCE_NOT_FOUND",
+      "request_id": "00000000-0000-0000-0000-000000000099"
+    }
+  },
+  "unavailable": {
+    "schema": "Problem",
+    "status": 503,
+    "body": {
+      "type": "about:blank",
+      "title": "No se pudo completar la consulta de catálogo",
+      "status": 503,
+      "detail": "No se pudo completar la consulta de catálogo",
+      "instance": "urn:request:00000000-0000-0000-0000-000000000099",
+      "code": "CATALOG_UNAVAILABLE",
+      "request_id": "00000000-0000-0000-0000-000000000099"
+    }
+  },
+  "validation": {
+    "schema": "ValidationProblem",
+    "status": 422,
+    "body": {
+      "type": "about:blank",
+      "title": "Revisa los parámetros indicados",
+      "status": 422,
+      "detail": "Revisa los parámetros indicados",
+      "instance": "urn:request:00000000-0000-0000-0000-000000000099",
+      "code": "VALIDATION_ERROR",
+      "request_id": "00000000-0000-0000-0000-000000000099",
+      "errors": [
+        {
+          "location": "query",
+          "field": "metadata_version_id",
+          "code": "REQUIRED",
+          "message": "Se requiere el identificador"
+        }
+      ]
+    }
+  }
+}

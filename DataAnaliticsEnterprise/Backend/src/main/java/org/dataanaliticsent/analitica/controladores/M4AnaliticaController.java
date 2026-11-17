@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.dataanaliticsent.analitica.dto.KpiEvaluateRequest;
 import org.dataanaliticsent.analitica.servicios.KpiService;
-import org.dataanaliticsent.errores.ProblemasHttp;
+import org.dataanaliticsent.TroncoComun.errores.ProblemasHttp;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;

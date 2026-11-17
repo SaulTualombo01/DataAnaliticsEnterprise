@@ -1,0 +1,696 @@
+{
+  "request_live": {
+    "schema": "ReadRequest",
+    "body": {
+      "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+      "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+      "field_ids": [
+        "00000000-0000-0000-0000-000000000001",
+        "00000000-0000-0000-0000-000000000002",
+        "00000000-0000-0000-0000-000000000003"
+      ],
+      "mode": "live",
+      "max_rows": 10000,
+      "max_bytes": 10485760,
+      "timeout_ms": 60000
+    }
+  },
+  "read_live": {
+    "schema": "ReadResponse",
+    "status": 201,
+    "body": {
+      "data": {
+        "read": {
+          "read_id": "18caae59-1c8e-4c7c-a968-38b6b9190b2a",
+          "execution_id": "03c4b131-f553-488c-bc37-d25cfa161379",
+          "origin_request_id": "2f7af5ca-05e4-4fb6-8261-b2fd9681cc3a",
+          "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+          "source_id": "a5ab298e-2fc1-5459-af10-c741dcda1635",
+          "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "field_ids": [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000003"
+          ],
+          "observed_at": "2026-11-11T23:00:00Z",
+          "mode": "live",
+          "execution_state": "COMPLETED",
+          "scope": {
+            "kind": "asset",
+            "complete": true,
+            "partial_reason": null
+          },
+          "counts": {
+            "returned_rows": 3,
+            "expected_rows": 3,
+            "serialized_bytes": 882,
+            "coverage_ratio": 1.0
+          },
+          "capture": null,
+          "representation": "raw_cells_v1"
+        },
+        "records": [
+          {
+            "row_number": 1,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "1"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "VALUE",
+                "raw_value": "Cliente de ejemplo"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "true"
+              }
+            ]
+          },
+          {
+            "row_number": 2,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "1"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "NULL",
+                "raw_value": null
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "invalid_boolean"
+              }
+            ]
+          },
+          {
+            "row_number": 3,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "2"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "MISSING",
+                "raw_value": null
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "false"
+              }
+            ]
+          }
+        ]
+      },
+      "meta": {
+        "request_id": "2f7af5ca-05e4-4fb6-8261-b2fd9681cc3a"
+      }
+    }
+  },
+  "read_empty": {
+    "schema": "ReadResponse",
+    "status": 201,
+    "body": {
+      "data": {
+        "read": {
+          "read_id": "8a7949e3-4f15-478a-b45f-60e0fdc660e4",
+          "execution_id": "6d3c8af0-c6b1-4939-a416-072df57e8e41",
+          "origin_request_id": "a5592c69-bcfd-460a-83ee-b34e5d34095f",
+          "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+          "source_id": "a5ab298e-2fc1-5459-af10-c741dcda1635",
+          "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "field_ids": [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000003"
+          ],
+          "observed_at": "2026-11-11T23:00:00Z",
+          "mode": "live",
+          "execution_state": "COMPLETED",
+          "scope": {
+            "kind": "asset",
+            "complete": true,
+            "partial_reason": null
+          },
+          "counts": {
+            "returned_rows": 0,
+            "expected_rows": 0,
+            "serialized_bytes": 2,
+            "coverage_ratio": null
+          },
+          "capture": null,
+          "representation": "raw_cells_v1"
+        },
+        "records": []
+      },
+      "meta": {
+        "request_id": "a5592c69-bcfd-460a-83ee-b34e5d34095f"
+      }
+    }
+  },
+  "read_partial": {
+    "schema": "ReadResponse",
+    "status": 201,
+    "body": {
+      "data": {
+        "read": {
+          "read_id": "58e20100-017e-481c-b362-1187d4943786",
+          "execution_id": "134acb98-03c1-4a29-86aa-24d131526370",
+          "origin_request_id": "caf55059-87cf-4f2f-ae8a-4e579e5ab88b",
+          "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+          "source_id": "a5ab298e-2fc1-5459-af10-c741dcda1635",
+          "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "field_ids": [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000003"
+          ],
+          "observed_at": "2026-11-11T23:00:00Z",
+          "mode": "capture",
+          "execution_state": "FAILED",
+          "scope": {
+            "kind": "asset",
+            "complete": false,
+            "partial_reason": "SOURCE_INCOMPLETE"
+          },
+          "counts": {
+            "returned_rows": 1,
+            "expected_rows": 3,
+            "serialized_bytes": 301,
+            "coverage_ratio": 0.3333333333333333
+          },
+          "capture": null,
+          "representation": "raw_cells_v1"
+        },
+        "records": [
+          {
+            "row_number": 1,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "1"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "VALUE",
+                "raw_value": "Cliente de ejemplo"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "true"
+              }
+            ]
+          }
+        ]
+      },
+      "meta": {
+        "request_id": "caf55059-87cf-4f2f-ae8a-4e579e5ab88b"
+      }
+    }
+  },
+  "read_capture": {
+    "schema": "ReadResponse",
+    "status": 201,
+    "body": {
+      "data": {
+        "read": {
+          "read_id": "b7a2fc45-6572-4b2f-97a0-ca8670ec2e61",
+          "execution_id": "afd1617e-3456-49bf-95cd-360cc8de3ec4",
+          "origin_request_id": "14f1f0cd-f3cb-4cb9-afc3-7ae1f86b3d0d",
+          "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+          "source_id": "a5ab298e-2fc1-5459-af10-c741dcda1635",
+          "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "field_ids": [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000003"
+          ],
+          "observed_at": "2026-11-11T23:00:00Z",
+          "mode": "capture",
+          "execution_state": "COMPLETED",
+          "scope": {
+            "kind": "asset",
+            "complete": true,
+            "partial_reason": null
+          },
+          "counts": {
+            "returned_rows": 3,
+            "expected_rows": 3,
+            "serialized_bytes": 882,
+            "coverage_ratio": 1.0
+          },
+          "capture": {
+            "capture_id": "2e03ab98-555d-4126-a9bd-79d7dbf69a9d",
+            "created_at": "2026-11-11T23:00:00Z",
+            "expires_at": "2026-11-18T23:00:00Z",
+            "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+            "source_id": "a5ab298e-2fc1-5459-af10-c741dcda1635",
+            "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+            "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+            "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+            "field_ids": [
+              "00000000-0000-0000-0000-000000000001",
+              "00000000-0000-0000-0000-000000000002",
+              "00000000-0000-0000-0000-000000000003"
+            ],
+            "content_hash": "32ded4da083a29f31fbea6ae60a62734d9a69205770c34c8dacfcc22489973d6",
+            "representation": "raw_cells_v1",
+            "row_count": 3,
+            "content_hash_encoding": "json_utf8_compact_v1"
+          },
+          "representation": "raw_cells_v1"
+        },
+        "records": [
+          {
+            "row_number": 1,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "1"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "VALUE",
+                "raw_value": "Cliente de ejemplo"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "true"
+              }
+            ]
+          },
+          {
+            "row_number": 2,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "1"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "NULL",
+                "raw_value": null
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "invalid_boolean"
+              }
+            ]
+          },
+          {
+            "row_number": 3,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "2"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "MISSING",
+                "raw_value": null
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "false"
+              }
+            ]
+          }
+        ]
+      },
+      "meta": {
+        "request_id": "14f1f0cd-f3cb-4cb9-afc3-7ae1f86b3d0d"
+      }
+    }
+  },
+  "receipt": {
+    "schema": "ReceiptResponse",
+    "status": 200,
+    "body": {
+      "data": {
+        "read_id": "b7a2fc45-6572-4b2f-97a0-ca8670ec2e61",
+        "execution_id": "afd1617e-3456-49bf-95cd-360cc8de3ec4",
+        "origin_request_id": "14f1f0cd-f3cb-4cb9-afc3-7ae1f86b3d0d",
+        "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+        "source_id": "a5ab298e-2fc1-5459-af10-c741dcda1635",
+        "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+        "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+        "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+        "field_ids": [
+          "00000000-0000-0000-0000-000000000001",
+          "00000000-0000-0000-0000-000000000002",
+          "00000000-0000-0000-0000-000000000003"
+        ],
+        "observed_at": "2026-11-11T23:00:00Z",
+        "mode": "capture",
+        "execution_state": "COMPLETED",
+        "scope": {
+          "kind": "asset",
+          "complete": true,
+          "partial_reason": null
+        },
+        "counts": {
+          "returned_rows": 3,
+          "expected_rows": 3,
+          "serialized_bytes": 882,
+          "coverage_ratio": 1.0
+        },
+        "capture": {
+          "capture_id": "2e03ab98-555d-4126-a9bd-79d7dbf69a9d",
+          "created_at": "2026-11-11T23:00:00Z",
+          "expires_at": "2026-11-18T23:00:00Z",
+          "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+          "source_id": "a5ab298e-2fc1-5459-af10-c741dcda1635",
+          "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "field_ids": [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000003"
+          ],
+          "content_hash": "32ded4da083a29f31fbea6ae60a62734d9a69205770c34c8dacfcc22489973d6",
+          "representation": "raw_cells_v1",
+          "row_count": 3,
+          "content_hash_encoding": "json_utf8_compact_v1"
+        },
+        "representation": "raw_cells_v1"
+      },
+      "meta": {
+        "request_id": "64a18dc5-9187-4735-94c8-b466dc37502e"
+      }
+    }
+  },
+  "capture_content": {
+    "schema": "CaptureResponse",
+    "status": 200,
+    "body": {
+      "data": {
+        "capture": {
+          "capture_id": "2e03ab98-555d-4126-a9bd-79d7dbf69a9d",
+          "created_at": "2026-11-11T23:00:00Z",
+          "expires_at": "2026-11-18T23:00:00Z",
+          "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+          "source_id": "a5ab298e-2fc1-5459-af10-c741dcda1635",
+          "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "field_ids": [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000003"
+          ],
+          "content_hash": "32ded4da083a29f31fbea6ae60a62734d9a69205770c34c8dacfcc22489973d6",
+          "representation": "raw_cells_v1",
+          "row_count": 3,
+          "content_hash_encoding": "json_utf8_compact_v1"
+        },
+        "records": [
+          {
+            "row_number": 1,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "1"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "VALUE",
+                "raw_value": "Cliente de ejemplo"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "true"
+              }
+            ]
+          },
+          {
+            "row_number": 2,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "1"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "NULL",
+                "raw_value": null
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "invalid_boolean"
+              }
+            ]
+          },
+          {
+            "row_number": 3,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "2"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "MISSING",
+                "raw_value": null
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "false"
+              }
+            ]
+          }
+        ]
+      },
+      "meta": {
+        "request_id": "ee6344b2-f044-4d20-9b60-a9a6c627ad8f"
+      }
+    }
+  },
+  "unknown_coverage": {
+    "schema": "ReadResponse",
+    "status": 201,
+    "body": {
+      "data": {
+        "read": {
+          "read_id": "18caae59-1c8e-4c7c-a968-38b6b9190b2a",
+          "execution_id": "03c4b131-f553-488c-bc37-d25cfa161379",
+          "origin_request_id": "2f7af5ca-05e4-4fb6-8261-b2fd9681cc3a",
+          "organization_id": "4b234512-6e90-5a3c-b494-a30f02eb117d",
+          "source_id": "a5ab298e-2fc1-5459-af10-c741dcda1635",
+          "metadata_version_id": "b79bc1d4-9d6b-50ab-b0a2-c5ba0299ab07",
+          "project_id": "2f66e241-dd8b-508f-b5e1-85db372e9f2c",
+          "asset_id": "f5671a70-c3d1-58ad-b14d-5ec5501146bc",
+          "field_ids": [
+            "00000000-0000-0000-0000-000000000001",
+            "00000000-0000-0000-0000-000000000002",
+            "00000000-0000-0000-0000-000000000003"
+          ],
+          "observed_at": "2026-11-11T23:00:00Z",
+          "mode": "live",
+          "execution_state": "COMPLETED",
+          "scope": {
+            "kind": "asset",
+            "complete": true,
+            "partial_reason": null
+          },
+          "counts": {
+            "returned_rows": 3,
+            "expected_rows": null,
+            "serialized_bytes": 882,
+            "coverage_ratio": null
+          },
+          "capture": null,
+          "representation": "raw_cells_v1"
+        },
+        "records": [
+          {
+            "row_number": 1,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "1"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "VALUE",
+                "raw_value": "Cliente de ejemplo"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "true"
+              }
+            ]
+          },
+          {
+            "row_number": 2,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "1"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "NULL",
+                "raw_value": null
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "invalid_boolean"
+              }
+            ]
+          },
+          {
+            "row_number": 3,
+            "values": [
+              {
+                "field_id": "00000000-0000-0000-0000-000000000001",
+                "state": "VALUE",
+                "raw_value": "2"
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000002",
+                "state": "MISSING",
+                "raw_value": null
+              },
+              {
+                "field_id": "00000000-0000-0000-0000-000000000003",
+                "state": "VALUE",
+                "raw_value": "false"
+              }
+            ]
+          }
+        ]
+      },
+      "meta": {
+        "request_id": "2f7af5ca-05e4-4fb6-8261-b2fd9681cc3a"
+      }
+    }
+  },
+  "denied": {
+    "schema": "Problem",
+    "status": 403,
+    "body": {
+      "type": "about:blank",
+      "title": "La solicitud no está autorizada",
+      "status": 403,
+      "detail": "La solicitud no está autorizada",
+      "instance": "urn:request:79e8ac21-fcc7-4422-b372-2072a10d5111",
+      "code": "CONTENT_ACCESS_DENIED",
+      "request_id": "79e8ac21-fcc7-4422-b372-2072a10d5111"
+    }
+  },
+  "unauthenticated": {
+    "schema": "Problem",
+    "status": 401,
+    "body": {
+      "type": "about:blank",
+      "title": "Inicia sesión para continuar",
+      "status": 401,
+      "detail": "Inicia sesión para continuar",
+      "instance": "urn:request:5d6ae77e-010e-4881-9137-6de2031e6ebb",
+      "code": "AUTHENTICATION_REQUIRED",
+      "request_id": "5d6ae77e-010e-4881-9137-6de2031e6ebb"
+    }
+  },
+  "unavailable": {
+    "schema": "Problem",
+    "status": 503,
+    "body": {
+      "type": "about:blank",
+      "title": "No se pudo completar la lectura",
+      "status": 503,
+      "detail": "No se pudo completar la lectura",
+      "instance": "urn:request:4f571b62-320e-4ab2-91f7-c5651bdeb271",
+      "code": "READ_UNAVAILABLE",
+      "request_id": "4f571b62-320e-4ab2-91f7-c5651bdeb271"
+    }
+  },
+  "source_disabled": {
+    "schema": "Problem",
+    "status": 409,
+    "body": {
+      "type": "about:blank",
+      "title": "La fuente no admite nuevas lecturas",
+      "status": 409,
+      "detail": "La fuente no admite nuevas lecturas",
+      "instance": "urn:request:5a0e1207-a62e-4199-812b-c5968feacd79",
+      "code": "SOURCE_DISABLED",
+      "request_id": "5a0e1207-a62e-4199-812b-c5968feacd79"
+    }
+  },
+  "not_found": {
+    "schema": "Problem",
+    "status": 404,
+    "body": {
+      "type": "about:blank",
+      "title": "El recurso no está disponible",
+      "status": 404,
+      "detail": "El recurso no está disponible",
+      "instance": "urn:request:5b6789ac-561d-430c-b4b1-a46f2c5d6233",
+      "code": "RESOURCE_NOT_FOUND",
+      "request_id": "5b6789ac-561d-430c-b4b1-a46f2c5d6233"
+    }
+  },
+  "expired": {
+    "schema": "Problem",
+    "status": 410,
+    "body": {
+      "type": "about:blank",
+      "title": "La captura ya no está disponible",
+      "status": 410,
+      "detail": "La captura ya no está disponible",
+      "instance": "urn:request:c6c92108-5c2e-41d2-976e-ec4f31180572",
+      "code": "CAPTURE_EXPIRED",
+      "request_id": "c6c92108-5c2e-41d2-976e-ec4f31180572"
+    }
+  },
+  "validation": {
+    "schema": "Problem",
+    "status": 422,
+    "body": {
+      "type": "about:blank",
+      "title": "Revisa la solicitud",
+      "status": 422,
+      "detail": "Revisa la solicitud",
+      "instance": "urn:request:560d60a3-8890-4782-b89d-b8061fa557ed",
+      "code": "VALIDATION_ERROR",
+      "request_id": "560d60a3-8890-4782-b89d-b8061fa557ed"
+    }
+  }
+}

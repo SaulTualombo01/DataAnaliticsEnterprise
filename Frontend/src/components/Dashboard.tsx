@@ -53,7 +53,7 @@ function Dashboard() {
     })
 
   return (
-    <main className="mx-auto min-h-svh max-w-3xl p-6">
+    <div className="max-w-3xl">
       <Tabs defaultValue="resumen" className="gap-4">
         <TabsList>
           <TabsTrigger value="resumen">Resumen</TabsTrigger>
@@ -106,7 +106,7 @@ function Dashboard() {
           </Card>
         </TabsContent>
       </Tabs>
-    </main>
+    </div>
   )
 }
 

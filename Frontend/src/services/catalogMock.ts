@@ -18,10 +18,8 @@ const SYNTHETIC_ASSETS: Asset[] = [
     origin: { namespace: 'public', object_path: 'ventas_historicas' },
     status: 'active',
     metadata_version_id: '3f2504e0-4f89-41d3-9a0c-0305e82c3301',
-    structure_origin: 'declared',
     business_description: 'Pedidos cerrados del comercio de ejemplo.',
     tags: ['ventas'],
-    last_discovery_at: DISCOVERED_AT,
     updated_at: DISCOVERED_AT,
   },
   {
@@ -34,10 +32,8 @@ const SYNTHETIC_ASSETS: Asset[] = [
     origin: { namespace: 'public', object_path: 'sesiones_web' },
     status: 'active',
     metadata_version_id: '6ba7b810-9dad-41d1-80b4-00c04fd430c8',
-    structure_origin: 'inferred',
     business_description: 'Sesiones de navegación de la tienda en línea.',
     tags: ['web'],
-    last_discovery_at: DISCOVERED_AT,
     updated_at: DISCOVERED_AT,
   },
   {
@@ -50,10 +46,8 @@ const SYNTHETIC_ASSETS: Asset[] = [
     origin: { namespace: 'public', object_path: 'inventario' },
     status: 'active',
     metadata_version_id: '6ba7b811-9dad-41d1-80b4-00c04fd430c8',
-    structure_origin: 'declared',
     business_description: null,
     tags: ['logistica'],
-    last_discovery_at: DISCOVERED_AT,
     updated_at: DISCOVERED_AT,
   },
 ]

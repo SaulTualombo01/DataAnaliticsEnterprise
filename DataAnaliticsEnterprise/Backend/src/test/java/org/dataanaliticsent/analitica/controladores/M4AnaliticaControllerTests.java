@@ -11,7 +11,7 @@ import org.dataanaliticsent.analitica.dto.KpiResult;
 import org.dataanaliticsent.analitica.dto.KpiStatus;
 import org.dataanaliticsent.analitica.dto.Scope;
 import org.dataanaliticsent.analitica.servicios.KpiService;
-import org.dataanaliticsent.errores.ProblemasHttp;
+import org.dataanaliticsent.TroncoComun.errores.ProblemasHttp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import tools.jackson.databind.json.JsonMapper;
 
+import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -85,7 +86,7 @@ class M4AnaliticaControllerTests {
                 .andExpect(content().contentTypeCompatibleWith("application/problem+json"))
                 .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.instance").value(RUTA_KPIS))
+                .andExpect(jsonPath("$.instance").value(startsWith("urn:request:")))
                 .andExpect(jsonPath("$.request_id").isNotEmpty());
 
         verifyNoInteractions(kpiService);

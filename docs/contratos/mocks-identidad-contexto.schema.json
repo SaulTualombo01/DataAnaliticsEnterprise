@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Fixture de identidad y contexto para el contenedor Q1",
+  "description": "Mock local explícito. No representa un nuevo endpoint ni autoriza operaciones reales.",
+  "type": "object",
+  "required": ["kind", "profile", "contexts"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "mock" },
+    "profile": {
+      "type": "object", "required": ["id", "email", "display_name"], "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "email": { "type": "string", "format": "email" },
+        "display_name": { "type": "string", "minLength": 1 }
+      }
+    },
+    "contexts": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "required": ["organization_id", "organization_name", "project_id", "project_name", "role_label"], "additionalProperties": false,
+        "properties": {
+          "organization_id": { "type": "string", "format": "uuid" },
+          "organization_name": { "type": "string", "minLength": 1 },
+          "project_id": { "type": "string", "format": "uuid" },
+          "project_name": { "type": "string", "minLength": 1 },
+          "role_label": { "type": "string", "minLength": 1 },
+          "asset_id": { "type": "string", "format": "uuid" }
+        }
+      }
+    }
+  }
+}
