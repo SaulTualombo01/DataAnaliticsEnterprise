@@ -91,6 +91,11 @@ persistencia, credenciales, arranque con IntelliJ y límites de desarrollo.
 
 ### Base de datos de desarrollo (alternativa sin Docker)
 
+El entorno Docker anterior de M4 se conserva en docker-compose.m4-legacy.yml,
+con proyecto/puerto/volumen independientes. Consulta la [guía M4/TC04](docs/INTEGRACION_M4_TC04.md).
+La [conciliación M0–M4](docs/Conciliacion_M0_M4.md) explica la selección automática
+de las dos historias V4 y la nueva V8; no se renumeran migraciones aplicadas.
+
 Se utiliza Spring JDBC y Flyway como mecanismo único de migración. Las migraciones
 crean los esquemas `identidad`, `contexto`, `autorizacion`, `catalogo`, `auditoria`
 y `versionado`; V7 añade `secretos`. Usar una base dedicada y vacía para este proyecto.
@@ -247,9 +252,10 @@ lista vacía implica no mostrar datos. La comprobación de un recurso concreto
 no habilita listar todo el proyecto. Estados del recurso y reglas funcionales
 siguen siendo responsabilidad del caso de uso propietario.
 
-No se crean endpoints de negocio M1 ni endpoints para cambiar roles. Los cambios de roles/permisos deben realizarse
-mediante el futuro servicio administrativo autorizado y auditado. Las pruebas
-modifican fixtures SQL para comprobar que el evaluador refleja esos cambios.
+No se crean endpoints de negocio M1 en M0. TC-08/09 implementa la asignación
+y revocación administrativa de roles funcionales. El catálogo de permisos
+no tiene todavía editor web; las pruebas modifican fixtures para verificar
+que el evaluador refleja cambios sin reiniciar.
 
 ### Autenticación y sesiones
 
@@ -337,5 +343,6 @@ No incluye todavía pantallas administrativas ni roles funcionales por proyecto.
 Backend de participación empresarial/proyectos con un rol funcional vigente,
 alcances explícitos, historial, revisión administrativa y contexto personal.
 [Guía y contratos](docs/contratos/TC08_TC09.md). V6 es nueva y requiere resolver
-conflictos heredados antes de migrar;6 roles/77 permisos. La interfaz se integra
+conflictos heredados antes de migrar;6 roles/77 permisos en V6.
+La conciliación M4 añade m4.kpis.evaluate:78 permisos iniciales en V8. La interfaz se integra
 en TC-10. Cambios actuales de TC aún no incorporados a la rama M1.

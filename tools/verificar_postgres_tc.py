@@ -35,6 +35,9 @@ try:
     run([pg/'pg_ctl.exe','-D',cluster,'-l',base/'postgres.log','-o',f'-h 127.0.0.1 -p {port}','-w','start'],timeout=60); started=True
     run([pg/'psql.exe','-h','127.0.0.1','-p',str(port),'-U','tic_test_admin','-d','postgres','-v','ON_ERROR_STOP=1'],
         input=f"CREATE ROLE tic_test_app LOGIN NOSUPERUSER PASSWORD '{app_password}';\nCREATE DATABASE tic_tc_test OWNER tic_test_app;\nCREATE DATABASE tic_upgrade_test OWNER tic_test_app;\nCREATE ROLE tic_source_test LOGIN NOSUPERUSER PASSWORD '{source_password}';\nCREATE DATABASE tic_source_test OWNER tic_source_test;\n",text=True,timeout=20)
+    run([pg/'psql.exe','-h','127.0.0.1','-p',str(port),'-U','tic_test_admin','-d','postgres','-v','ON_ERROR_STOP=1'],
+        input=''.join(f"CREATE DATABASE tic_reconcile_{i} OWNER tic_test_app;\n" for i in range(1,9)),text=True,timeout=20)
+    env['DB_RECONCILE_BASE']=f'jdbc:postgresql://127.0.0.1:{port}/tic_reconcile_'
     env.update(DB_URL=f'jdbc:postgresql://127.0.0.1:{port}/tic_tc_test',DB_USER='tic_test_app',DB_PASSWORD=app_password)
     env['DB_UPGRADE_URL']=f'jdbc:postgresql://127.0.0.1:{port}/tic_upgrade_test'
     env.update(TC11_SOURCE_URL=f'jdbc:postgresql://127.0.0.1:{port}/tic_source_test',TC11_SOURCE_USER='tic_source_test',TC11_SOURCE_PASSWORD=source_password)

@@ -2,7 +2,9 @@
 
 Actualización14/11/2026: cuentas1.1 añade detalle y edición de nombre con revisión;
 la base de invitaciones descrita debajo conserva su comportamiento. Ver
-[TC-08/TC-09](TC08_TC09.md); el total vigente es6 roles/77 permisos.
+[TC-08/TC-09](TC08_TC09.md); V6 contiene6 roles/77 permisos.
+Actualización20/11/2026: la [conciliación M4](../Conciliacion_M0_M4.md)
+mantiene6 roles y añade m4.kpis.evaluate, para78 permisos iniciales en V8.
 
 13 de noviembre de 2026. Base técnica 1.0.0, ocho operaciones HTTP implementadas
 en modulo0_troncoComun. Contratos: cuentas.openapi.json, cuentas.schema.json y

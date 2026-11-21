@@ -1,0 +1,2 @@
+inicializar-postgres.sh text eol=lf
+docker/postgres/*.sh text eol=lf
